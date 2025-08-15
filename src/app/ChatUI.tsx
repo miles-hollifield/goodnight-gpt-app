@@ -1,12 +1,20 @@
 "use client";
 import React, { useRef, useState, useEffect } from "react";
-import { Box, Paper, Typography, IconButton, InputBase, CircularProgress, Avatar, Stack } from "@mui/material";
+import { Box, Paper, Typography, IconButton, InputBase, CircularProgress, Avatar, Stack, Tooltip } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 
 interface Message {
   id: number;
   sender: "user" | "ai";
   text: string;
+  context?: RetrievedContext[];
+}
+
+interface RetrievedContext {
+  id: string;
+  score: number;
+  text: string;
+  metadata: Record<string, any>;
 }
 
 export default function ChatUI() {
@@ -27,14 +35,27 @@ export default function ChatUI() {
     setMessages((msgs) => [...msgs, userMsg]);
     setInput("");
     setLoading(true);
-    // Simulate AI response (replace with backend call)
-    setTimeout(() => {
-      setMessages((msgs) => [
-        ...msgs,
-        { id: Date.now() + 1, sender: "ai", text: "(AI response placeholder)" },
-      ]);
+    try {
+      const base = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+      const res = await fetch(`${base}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMsg.text })
+      });
+      if (!res.ok) throw new Error(`Backend error ${res.status}`);
+      const data = await res.json();
+      const aiMsg: Message = {
+        id: Date.now() + 1,
+        sender: "ai",
+        text: data.response ?? "(no response)",
+        context: data.context
+      };
+      setMessages((msgs) => [...msgs, aiMsg]);
+    } catch (e: any) {
+      setMessages((msgs) => [...msgs, { id: Date.now() + 1, sender: "ai", text: `Error: ${e.message}` }]);
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -57,8 +78,22 @@ export default function ChatUI() {
                 <Avatar sx={{ bgcolor: msg.sender === "user" ? "primary.main" : "grey.400", width: 32, height: 32, fontSize: 18 }}>
                   {msg.sender === "user" ? "U" : "AI"}
                 </Avatar>
-                <Paper sx={{ p: 1.5, mx: 1, maxWidth: 340, bgcolor: msg.sender === "user" ? "primary.light" : "grey.100" }}>
+                <Paper sx={{ p: 1.5, mx: 1, maxWidth: 360, bgcolor: msg.sender === "user" ? "primary.light" : "grey.100" }}>
                   <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>{msg.text}</Typography>
+                  {msg.sender === "ai" && msg.context && msg.context.length > 0 && (
+                    <Box mt={1}>
+                      <Typography variant="caption" color="text.secondary">Sources:</Typography>
+                      <Stack spacing={0.5} mt={0.5}>
+                        {msg.context.slice(0,3).map((c) => (
+                          <Tooltip key={c.id} title={`Score: ${c.score.toFixed(3)}\n${c.text}`} placement="right" arrow>
+                            <Paper variant="outlined" sx={{ p: 0.5, bgcolor: "grey.50" }}>
+                              <Typography variant="caption" noWrap>{c.text}</Typography>
+                            </Paper>
+                          </Tooltip>
+                        ))}
+                      </Stack>
+                    </Box>
+                  )}
                 </Paper>
               </Box>
             ))}
