@@ -1,7 +1,7 @@
 
 "use client";
-import ChatUI from "./ChatUI";
+import ChatContainer from "@/components/ChatContainer";
 
 export default function Home() {
-  return <ChatUI />;
+  return <ChatContainer />;
 }

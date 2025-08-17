@@ -1,26 +1,85 @@
 @import "tailwindcss";
 
 :root {
+  /* Light theme - similar to ChatGPT */
   --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --foreground: #0d0d0d;
+  --sidebar-bg: #f7f7f8;
+  --sidebar-hover: #ececf1;
+  --border-color: #e5e5e5;
+  --message-user-bg: #f7f7f8;
+  --message-ai-bg: #ffffff;
+  --input-bg: #ffffff;
+  --hover-bg: #f7f7f8;
+  --text-primary: #0d0d0d;
+  --text-secondary: #666666;
+  --accent: #10a37f;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Dark theme - similar to ChatGPT */
+    --background: #343541;
+    --foreground: #ececf1;
+    --sidebar-bg: #202123;
+    --sidebar-hover: #2a2b32;
+    --border-color: #4e4f60;
+    --message-user-bg: #343541;
+    --message-ai-bg: #444654;
+    --input-bg: #40414f;
+    --hover-bg: #2a2b32;
+    --text-primary: #ececf1;
+    --text-secondary: #c5c5d2;
+    --accent: #10a37f;
   }
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  height: 100vh;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Utility classes */
+.transition-colors {
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
