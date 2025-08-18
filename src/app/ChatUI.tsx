@@ -32,13 +32,16 @@ const LS_KEY = "gn_conversations_v1";
 
 const initialGreeting = "Hello! How can I help you with your scholarship questions today?";
 
+let chatUIMessageIdCounter = 3000; // Start higher to avoid conflicts
+
 function createBlankConversation(): Conversation {
+  const now = Date.now();
   return {
     id: crypto.randomUUID(),
     title: "New Chat",
-    messages: [ { id: Date.now(), sender: "ai", text: initialGreeting } ],
-    createdAt: Date.now(),
-    updatedAt: Date.now()
+    messages: [ { id: chatUIMessageIdCounter++, sender: "ai", text: initialGreeting } ],
+    createdAt: now,
+    updatedAt: now
   };
 }
 
@@ -86,7 +89,7 @@ export default function ChatUI() {
     if (filtered.length === 0) {
       const fresh = createBlankConversation();
       persist([fresh]);
-      setCurrentId(fresh.id);</HTMLDivElement>
+      setCurrentId(fresh.id);
     } else {
       persist(filtered);
       if (convId === currentId) setCurrentId(filtered[0].id);
@@ -95,7 +98,7 @@ export default function ChatUI() {
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
-    const userMsg: Message = { id: Date.now(), sender: "user", text: input };
+    const userMsg: Message = { id: chatUIMessageIdCounter++, sender: "user", text: input };
     setInput("");
     setLoading(true);
     // Add user message immediately
@@ -118,7 +121,7 @@ export default function ChatUI() {
       if (!res.ok) throw new Error(`Backend error ${res.status}`);
       const data = await res.json();
       const aiMsg: Message = {
-        id: Date.now() + 1,
+        id: chatUIMessageIdCounter++,
         sender: "ai",
         text: data.response ?? "(no response)",
         context: data.context
@@ -130,7 +133,7 @@ export default function ChatUI() {
       });
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : 'Unknown error';
-      const errMsg: Message = { id: Date.now() + 1, sender: "ai", text: `Error: ${message}` };
+      const errMsg: Message = { id: chatUIMessageIdCounter++, sender: "ai", text: `Error: ${message}` };
       updateConversation(currentId, c => { c.messages = [...c.messages, errMsg]; c.updatedAt = Date.now(); return c; });
     } finally {
       setLoading(false);

@@ -3,88 +3,140 @@
 import { useRef, useEffect } from "react";
 import { Message } from "@/types";
 import { ChatMessage } from "./ChatMessage";
+import { 
+  Box, 
+  Typography, 
+  Card, 
+  CardContent, 
+  Grid, 
+  Avatar,
+  CircularProgress 
+} from "@mui/material";
+import ChatIcon from '@mui/icons-material/Chat';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
+import GpsFixedIcon from '@mui/icons-material/GpsFixed';
 
 interface ChatAreaProps {
   messages: Message[];
   loading: boolean;
-  title: string;
 }
 
-export function ChatArea({ messages, loading, title }: ChatAreaProps) {
+export function ChatArea({ messages, loading }: ChatAreaProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  return (
-    <main className="flex-1 flex flex-col relative">
-      {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b border-[var(--border-color)] bg-[var(--background)]">
-        <h1 className="text-lg font-semibold text-[var(--text-primary)]">
-          {title === "New Chat" ? "GoodnightGPT" : title}
-        </h1>
-        {loading && (
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-[var(--accent)] rounded-full animate-pulse"></div>
-            <div className="w-2 h-2 bg-[var(--accent)] rounded-full animate-pulse" style={{ animationDelay: "0.2s" }}></div>
-            <div className="w-2 h-2 bg-[var(--accent)] rounded-full animate-pulse" style={{ animationDelay: "0.4s" }}></div>
-          </div>
-        )}
-      </header>
+  console.log('ChatArea rendering with messages:', messages.length);
+  console.log('Messages:', messages.map(m => ({ sender: m.sender, text: m.text.slice(0, 50) })));
 
+  return (
+    <Box sx={{ 
+      height: '100%', 
+      display: 'flex', 
+      flexDirection: 'column',
+      overflow: 'hidden'
+    }}>
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto pb-32">
+      <Box sx={{ 
+        flex: 1, 
+        overflowY: 'auto',
+        pb: 2
+      }}>
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center max-w-md mx-auto p-6">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--accent)] flex items-center justify-center">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="text-white"
-                >
-                  <path
-                    d="M8 9H16M8 13H14M12 3C7.02944 3 3 7.02944 3 12C3 13.8179 3.48847 15.5238 4.33474 16.9872C4.48792 17.2567 4.56337 17.5645 4.52066 17.8653L3.98211 21.0177C3.93313 21.3576 4.21189 21.6426 4.55325 21.5955L7.68639 21.117C7.99213 21.0726 8.30404 21.1477 8.57721 21.3016C10.0437 22.1566 11.7554 22.6536 13.58 22.6957C18.3723 22.3161 22 18.2616 22 13.3333C22 7.81281 17.9706 3.33333 13 3.33333C12.6615 3.33333 12.3281 3.35435 12 3.39473"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
-                How can I help you today?
-              </h2>
-              <p className="text-[var(--text-secondary)]">
-                Ask me anything about scholarships, and I&apos;ll provide helpful information based on our knowledge base.
-              </p>
-            </div>
-          </div>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            height: '100%',
+            minHeight: '400px'
+          }}>
+            <Box sx={{ textAlign: 'center', maxWidth: 600, px: 3 }}>
+              <Avatar sx={{ 
+                width: 80, 
+                height: 80, 
+                mx: 'auto', 
+                mb: 3,
+                bgcolor: 'primary.main',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              }}>
+                <ChatIcon sx={{ fontSize: 40 }} />
+              </Avatar>
+              
+              <Typography variant="h4" component="h2" fontWeight="bold" gutterBottom>
+                Welcome to GoodnightGPT!
+              </Typography>
+              
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 4, lineHeight: 1.6 }}>
+                I&apos;m here to help you find scholarship opportunities and answer your questions. 
+                Each session is fresh and private - your conversation starts new every time.
+                Just ask me anything about scholarships, eligibility requirements, application tips, or funding options.
+              </Typography>
+              
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Card variant="outlined" sx={{ textAlign: 'left' }}>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <LightbulbIcon color="primary" sx={{ mr: 1 }} />
+                        <Typography variant="subtitle2" fontWeight="bold">
+                          Try asking:
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" color="text.secondary">
+                        &quot;What scholarships are available for computer science students?&quot;
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Card variant="outlined" sx={{ textAlign: 'left' }}>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <GpsFixedIcon color="primary" sx={{ mr: 1 }} />
+                        <Typography variant="subtitle2" fontWeight="bold">
+                          Or inquire:
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" color="text.secondary">
+                        &quot;How do I apply for need-based financial aid?&quot;
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            </Box>
+          </Box>
         ) : (
-          <div>
+          <Box>
             {messages.map((message) => (
               <ChatMessage key={message.id} message={message} />
             ))}
             {loading && (
-              <div className="flex gap-4 p-4 bg-[var(--message-ai-bg)]">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium bg-[#8e8ea0]">
-                  AI
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-[var(--text-secondary)] rounded-full animate-pulse"></div>
-                  <div className="w-2 h-2 bg-[var(--text-secondary)] rounded-full animate-pulse" style={{ animationDelay: "0.2s" }}></div>
-                  <div className="w-2 h-2 bg-[var(--text-secondary)] rounded-full animate-pulse" style={{ animationDelay: "0.4s" }}></div>
-                </div>
-              </div>
+              <Box sx={{ 
+                py: 3,
+                bgcolor: 'grey.50',
+                borderRadius: 1,
+                mb: 2
+              }}>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                  <Avatar sx={{ bgcolor: 'grey.500', width: 40, height: 40 }}>
+                    AI
+                  </Avatar>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CircularProgress size={16} />
+                    <Typography variant="body2" color="text.secondary">
+                      Thinking...
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
             )}
             <div ref={messagesEndRef} />
-          </div>
+          </Box>
         )}
-      </div>
-    </main>
+      </Box>
+    </Box>
   );
 }

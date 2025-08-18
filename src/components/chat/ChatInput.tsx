@@ -1,6 +1,14 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { 
+  Box, 
+  TextField, 
+  IconButton, 
+  Typography,
+  InputAdornment
+} from "@mui/material";
+import SendIcon from '@mui/icons-material/Send';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -9,19 +17,12 @@ interface ChatInputProps {
 
 export function ChatInput({ onSend, disabled }: ChatInputProps) {
   const [input, setInput] = useState("");
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
-    }
-  }, [input]);
+  const textFieldRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     // Auto-focus the input when not disabled
-    if (!disabled && textareaRef.current) {
-      textareaRef.current.focus();
+    if (!disabled && textFieldRef.current) {
+      textFieldRef.current.focus();
     }
   }, [disabled]);
 
@@ -31,7 +32,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
     setInput("");
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
@@ -39,53 +40,64 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
   };
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[var(--background)] via-[var(--background)] to-transparent">
-      <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} 
-        className="max-w-3xl mx-auto"
+    <Box sx={{ width: '100%' }}>
+      <Box 
+        component="form" 
+        onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
+        sx={{ width: '100%' }}
       >
-        <div className="relative flex items-end gap-3 p-3 rounded-2xl bg-[var(--input-bg)] border border-[var(--border-color)] shadow-lg">
-          <textarea
-            ref={textareaRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Message GoodnightGPT..."
-            className="flex-1 min-h-[24px] max-h-[200px] p-0 bg-transparent resize-none outline-none text-[var(--text-primary)] placeholder-[var(--text-secondary)] leading-6"
-            rows={1}
-            disabled={disabled}
-          />
-          <button
-            type="submit"
-            disabled={!input.trim() || disabled}
-            className={`p-2 rounded-lg transition-all duration-200 ${
-              !input.trim() || disabled
-                ? "text-[var(--text-secondary)] cursor-not-allowed opacity-50"
-                : "text-white bg-[var(--accent)] hover:bg-[var(--accent)]/80 shadow-sm"
-            }`}
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M7 11L12 6L17 11M12 18V7"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
+        <TextField
+          inputRef={textFieldRef}
+          multiline
+          maxRows={6}
+          fullWidth
+          variant="outlined"
+          placeholder="Message GoodnightGPT..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={disabled}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  type="submit"
+                  disabled={!input.trim() || disabled}
+                  color="primary"
+                  sx={{
+                    bgcolor: !input.trim() || disabled ? 'transparent' : 'primary.main',
+                    color: !input.trim() || disabled ? 'text.disabled' : 'white',
+                    '&:hover': {
+                      bgcolor: !input.trim() || disabled ? 'transparent' : 'primary.dark'
+                    },
+                    '&.Mui-disabled': {
+                      bgcolor: 'transparent'
+                    }
+                  }}
+                >
+                  <SendIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+            sx: {
+              borderRadius: 2,
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderWidth: 2
+              }
+            }
+          }}
+          sx={{
+            '& .MuiInputBase-root': {
+              pr: 1
+            }
+          }}
+        />
         {!disabled && (
-          <p className="text-xs text-[var(--text-secondary)] text-center mt-2">
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center', mt: 1 }}>
             Press Enter to send, Shift + Enter for new line
-          </p>
+          </Typography>
         )}
-      </form>
-    </div>
+      </Box>
+    </Box>
   );
 }

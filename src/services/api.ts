@@ -1,6 +1,8 @@
 import { API_BASE } from "@/utils/constants";
 import { Message } from "@/types";
 
+let messageIdCounter = 1000; // Start higher to avoid conflicts
+
 export async function sendMessage(message: string): Promise<Message> {
   const res = await fetch(`${API_BASE}/chat`, {
     method: "POST",
@@ -13,7 +15,7 @@ export async function sendMessage(message: string): Promise<Message> {
   const data = await res.json();
   
   return {
-    id: Date.now() + 1,
+    id: messageIdCounter++,
     sender: "ai",
     text: data.response ?? "(no response)",
     context: data.context,
