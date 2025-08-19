@@ -22,13 +22,21 @@ export function ChatMessage({ message }: ChatMessageProps) {
   return (
     <Box sx={{ 
       py: 2,
-      bgcolor: isUser ? 'transparent' : 'grey.50',
-      borderRadius: 1,
-      mb: 2
+      mb: 2,
+      display: 'flex',
+      justifyContent: isUser ? 'flex-end' : 'flex-start'
     }}>
-      <Box sx={{ display: 'flex', gap: 2 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        gap: 2,
+        maxWidth: '80%',
+        flexDirection: isUser ? 'row-reverse' : 'row',
+        bgcolor: isUser ? 'primary.main' : 'grey.50',
+        borderRadius: 2,
+        p: 2
+      }}>
         <Avatar sx={{ 
-          bgcolor: isUser ? 'primary.main' : 'grey.500',
+          bgcolor: isUser ? 'primary.dark' : 'grey.500',
           width: 40,
           height: 40
         }}>
@@ -41,7 +49,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
               whiteSpace: 'pre-wrap', 
               wordBreak: 'break-words',
               lineHeight: 1.6,
-              mb: message.context && message.context.length > 0 ? 2 : 0
+              mb: message.context && message.context.length > 0 ? 2 : 0,
+              color: isUser ? 'primary.contrastText' : 'text.primary'
             }}
           >
             {message.text}
