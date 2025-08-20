@@ -78,7 +78,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
                       <Chip 
-                        label={`Score: ${ctx.score.toFixed(3)}`} 
+                        label={`Score: ${ctx.score.toFixed(2)}`} 
                         size="small" 
                         variant="outlined"
                         color="primary"
