@@ -113,21 +113,21 @@ export default function ChatContainer() {
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <AppBar position="static" elevation={1} sx={{ bgcolor: 'background.paper', color: 'text.primary' }}>
+      <AppBar position="static" elevation={1} sx={{ bgcolor: 'primary.main', color: 'white' }}>
         <Toolbar sx={{ justifyContent: 'space-between' }}>
           <Box>
-            <Typography variant="h5" component="h1" fontWeight="bold">
+            <Typography variant="h5" component="h1" fontWeight="bold" sx={{ color: 'white' }}>
               GoodnightGPT
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
               Ask me anything about scholarships and I&apos;ll help you find the answers.
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {loading && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <CircularProgress size={16} />
-                <Typography variant="caption" color="text.secondary">
+                <CircularProgress size={16} sx={{ color: 'white' }} />
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
                   Thinking...
                 </Typography>
               </Box>
@@ -135,7 +135,7 @@ export default function ChatContainer() {
             <Tooltip title="Start New Chat">
               <IconButton 
                 onClick={createNewChat}
-                color="primary"
+                sx={{ color: 'white' }}
                 disabled={loading}
               >
                 <RefreshIcon />

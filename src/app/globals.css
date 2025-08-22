@@ -1,36 +1,40 @@
 @import "tailwindcss";
 
 :root {
-  /* Light theme - similar to ChatGPT */
+  /* Light theme - NC State colors */
   --background: #ffffff;
-  --foreground: #0d0d0d;
-  --sidebar-bg: #f7f7f8;
-  --sidebar-hover: #ececf1;
-  --border-color: #e5e5e5;
-  --message-user-bg: #f7f7f8;
+  --foreground: #000000;
+  --sidebar-bg: #f8f8f8;
+  --sidebar-hover: #f0f0f0;
+  --border-color: #e0e0e0;
+  --message-user-bg: #f8f8f8;
   --message-ai-bg: #ffffff;
   --input-bg: #ffffff;
-  --hover-bg: #f7f7f8;
-  --text-primary: #0d0d0d;
+  --hover-bg: #f8f8f8;
+  --text-primary: #000000;
   --text-secondary: #666666;
-  --accent: #10a37f;
+  --accent: #CC0000;
+  --header-bg: #CC0000;
+  --header-text: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* Dark theme - similar to ChatGPT */
-    --background: #343541;
-    --foreground: #ececf1;
-    --sidebar-bg: #202123;
-    --sidebar-hover: #2a2b32;
-    --border-color: #4e4f60;
-    --message-user-bg: #343541;
-    --message-ai-bg: #444654;
-    --input-bg: #40414f;
-    --hover-bg: #2a2b32;
-    --text-primary: #ececf1;
-    --text-secondary: #c5c5d2;
-    --accent: #10a37f;
+    /* Dark theme - NC State colors adapted for dark mode */
+    --background: #1a1a1a;
+    --foreground: #ffffff;
+    --sidebar-bg: #000000;
+    --sidebar-hover: #333333;
+    --border-color: #333333;
+    --message-user-bg: #1a1a1a;
+    --message-ai-bg: #2a2a2a;
+    --input-bg: #2a2a2a;
+    --hover-bg: #333333;
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --accent: #FF3333;
+    --header-bg: #CC0000;
+    --header-text: #ffffff;
   }
 }
 

@@ -29,8 +29,8 @@ export function ChatContainer({
   return (
     <div className="flex flex-col h-full relative">
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-color)]">
-        <h1 className="text-lg font-semibold text-[var(--text-primary)]">
+      <header className="flex items-center justify-between px-4 py-3 bg-[var(--header-bg)] text-[var(--header-text)] border-b border-[var(--border-color)]">
+        <h1 className="text-lg font-semibold text-[var(--header-text)]">
           {title === "New Chat" ? "GoodnightGPT" : title}
         </h1>
       </header>
