@@ -14,3 +14,6 @@ export { MainLayout } from "./layout/MainLayout";
 // Other components
 export { LoadingSpinner } from "./LoadingSpinner";
 export { default as ChatContainer } from "./ChatContainer";
+export { ErrorNotification } from "./ErrorNotification";
+export { ConnectionStatus } from "./ConnectionStatus";
+export { ErrorBoundary } from "./ErrorBoundary";

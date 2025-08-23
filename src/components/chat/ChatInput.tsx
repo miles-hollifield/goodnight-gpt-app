@@ -13,9 +13,10 @@ import SendIcon from '@mui/icons-material/Send';
 interface ChatInputProps {
   onSend: (message: string) => void;
   disabled?: boolean;
+  placeholder?: string;
 }
 
-export function ChatInput({ onSend, disabled }: ChatInputProps) {
+export function ChatInput({ onSend, disabled, placeholder }: ChatInputProps) {
   const [input, setInput] = useState("");
   const textFieldRef = useRef<HTMLTextAreaElement>(null);
 
@@ -52,7 +53,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           maxRows={6}
           fullWidth
           variant="outlined"
-          placeholder="Message GoodnightGPT..."
+          placeholder={placeholder || "Message GoodnightGPT..."}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}

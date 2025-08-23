@@ -19,3 +19,6 @@ export interface RetrievedContext {
   text: string;
   metadata: Record<string, unknown>;
 }
+
+// Re-export error types
+export * from './errors';

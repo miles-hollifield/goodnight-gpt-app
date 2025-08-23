@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useConversations } from "@/hooks/useConversations";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { sendMessage } from "@/services/api";
-import { Message } from "@/types";
+import { Message, ChatError } from "@/types";
 import { 
   Box, 
   Container, 
@@ -19,6 +19,8 @@ import {
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { ChatArea } from "@/components/chat/ChatArea";
 import { ChatInput } from "@/components/chat/ChatInput";
+import { ErrorNotification } from "@/components/ErrorNotification";
+import { ConnectionStatus } from "@/components/ConnectionStatus";
 
 let userMessageIdCounter = 2000; // Start higher to avoid conflicts
 
@@ -31,6 +33,9 @@ export default function ChatContainer() {
   } = useConversations();
   
   const [loading, setLoading] = useState(false);
+  const [currentError, setCurrentError] = useState<ChatError | null>(null);
+  const [isBackendOnline, setIsBackendOnline] = useState(true);
+  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
 
   useKeyboardShortcuts({ onNewChat: createNewChat });
 
@@ -61,6 +66,7 @@ export default function ChatContainer() {
     };
 
     setLoading(true);
+    setCurrentError(null); // Clear any previous errors
 
     // Add user message immediately
     updateConversation(currentId, (conv) => {
@@ -92,26 +98,73 @@ export default function ChatContainer() {
         console.log('Messages:', updatedConv.messages.map(m => ({ sender: m.sender, text: m.text.slice(0, 50) })));
         return updatedConv;
       });
-    } catch (error) {
-      const errorMessage: Message = {
-        id: userMessageIdCounter++,
-        sender: "ai",
-        text: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
-      };
       
-      updateConversation(currentId, (conv) => {
-        const updatedConv = { ...conv };
-        updatedConv.messages = [...updatedConv.messages, errorMessage];
-        updatedConv.updatedAt = Date.now();
-        return updatedConv;
-      });
+      // Clear any stored failed message on success
+      setLastFailedMessage(null);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      
+      // Store the failed message for retry
+      setLastFailedMessage(text.trim());
+      
+      if (error instanceof ChatError) {
+        setCurrentError(error);
+        
+        // Don't add error message to chat for retryable errors
+        if (!error.retryable) {
+          const errorMessage: Message = {
+            id: userMessageIdCounter++,
+            sender: "ai",
+            text: error.userMessage,
+          };
+          
+          updateConversation(currentId, (conv) => {
+            const updatedConv = { ...conv };
+            updatedConv.messages = [...updatedConv.messages, errorMessage];
+            updatedConv.updatedAt = Date.now();
+            return updatedConv;
+          });
+        }
+      } else {
+        // Fallback for non-ChatError instances
+        const errorMessage: Message = {
+          id: userMessageIdCounter++,
+          sender: "ai",
+          text: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+        };
+        
+        updateConversation(currentId, (conv) => {
+          const updatedConv = { ...conv };
+          updatedConv.messages = [...updatedConv.messages, errorMessage];
+          updatedConv.updatedAt = Date.now();
+          return updatedConv;
+        });
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleRetryLastMessage = () => {
+    if (lastFailedMessage) {
+      handleSendMessage(lastFailedMessage);
+    }
+  };
+
+  const handleDismissError = () => {
+    setCurrentError(null);
+    setLastFailedMessage(null);
+  };
+
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Error Notification */}
+      <ErrorNotification
+        error={currentError}
+        onRetry={handleRetryLastMessage}
+        onDismiss={handleDismissError}
+      />
+      
       {/* Header */}
       <AppBar position="static" elevation={1} sx={{ bgcolor: 'primary.main', color: 'white' }}>
         <Toolbar sx={{ justifyContent: 'space-between' }}>
@@ -123,7 +176,8 @@ export default function ChatContainer() {
               Ask me anything about scholarships and I&apos;ll help you find the answers.
             </Typography>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <ConnectionStatus onStatusChange={setIsBackendOnline} />
             {loading && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <CircularProgress size={16} sx={{ color: 'white' }} />
@@ -176,10 +230,19 @@ export default function ChatContainer() {
         <Paper elevation={3} sx={{ 
           borderRadius: 0,
           borderTop: 1,
-          borderColor: 'divider'
+          borderColor: 'divider',
+          opacity: isBackendOnline ? 1 : 0.6
         }}>
           <Container maxWidth="md" sx={{ py: 2 }}>
-            <ChatInput onSend={handleSendMessage} disabled={loading} />
+            <ChatInput 
+              onSend={handleSendMessage} 
+              disabled={loading || !isBackendOnline}
+              placeholder={
+                !isBackendOnline 
+                  ? "Service is offline. Please check your connection." 
+                  : undefined
+              }
+            />
           </Container>
         </Paper>
       </Box>
