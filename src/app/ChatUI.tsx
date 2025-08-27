@@ -5,6 +5,8 @@ import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import { DocumentUpload } from "@/components/DocumentUpload";
+import { UploadResponse } from "@/services/api";
 
 interface Message {
   id: number;
@@ -96,6 +98,36 @@ export default function ChatUI() {
     }
   };
 
+  const handleUploadSuccess = (response: UploadResponse) => {
+    // Create a system message to inform the user about the successful upload
+    const systemMessage: Message = {
+      id: chatUIMessageIdCounter++,
+      sender: "ai",
+      text: `✅ Document uploaded successfully!\n\n**${response.message}**\n\nProcessed ${response.chunks_indexed} chunks. Your document is now searchable in the knowledge base. You can ask questions about it!`
+    };
+    
+    updateConversation(currentId, conv => ({
+      ...conv,
+      messages: [...conv.messages, systemMessage],
+      updatedAt: Date.now()
+    }));
+  };
+
+  const handleUploadError = (error: Error) => {
+    // Create an error message to inform the user
+    const errorMessage: Message = {
+      id: chatUIMessageIdCounter++,
+      sender: "ai", 
+      text: `❌ Upload failed: ${error.message}\n\nPlease try again or contact support if the issue persists.`
+    };
+    
+    updateConversation(currentId, conv => ({
+      ...conv,
+      messages: [...conv.messages, errorMessage],
+      updatedAt: Date.now()
+    }));
+  };
+
   const handleSend = async () => {
     if (!input.trim() || loading) return;
     const userMsg: Message = { id: chatUIMessageIdCounter++, sender: "user", text: input };
@@ -170,6 +202,16 @@ export default function ChatUI() {
             ))}
           </List>
         </Box>
+        <Divider sx={{ borderColor: 'grey.800' }} />
+        
+        {/* Document Upload Section */}
+        <Box sx={{ p: 1.5 }}>
+          <DocumentUpload
+            onUploadSuccess={handleUploadSuccess}
+            onUploadError={handleUploadError}
+          />
+        </Box>
+        
         <Divider sx={{ borderColor: 'grey.800' }} />
         <Box sx={{ p: 1.5 }}>
           <Typography variant="caption" color="grey.400">GoodnightGPT • Beta</Typography>

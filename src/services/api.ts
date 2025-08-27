@@ -111,3 +111,62 @@ export async function checkBackendHealth(): Promise<boolean> {
     return false;
   }
 }
+
+export interface UploadResponse {
+  message: string;
+  chunks_indexed: number;
+  file_type: string;
+  columns?: string[];
+  pages?: number;
+}
+
+export async function uploadDocument(file: File): Promise<UploadResponse> {
+  return withRetry(async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout for uploads
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const res = await fetch(`${API_BASE}/upload-document`, {
+        method: "POST",
+        body: formData,
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new ChatError(
+          ErrorType.UPLOAD_ERROR,
+          `Upload failed: ${res.status}`,
+          errorData.detail || `Failed to upload ${file.name}`,
+          undefined,
+          true
+        );
+      }
+      
+      return await res.json();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      
+      if (error instanceof ChatError) {
+        throw error;
+      }
+      
+      if (error instanceof Error) {
+        throw ChatError.fromNetworkError(error);
+      }
+      
+      throw new ChatError(
+        ErrorType.UNKNOWN,
+        'Unknown upload error',
+        'An unexpected error occurred while uploading. Please try again.',
+        undefined,
+        true
+      );
+    }
+  }, { maxRetries: 1 }); // Only retry once for uploads to avoid long delays
+}

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Conversation } from "@/types";
 import { NewChatButton } from "./NewChatButton";
 import { ConversationItem } from "./ConversationItem";
+import { DocumentUpload } from "../DocumentUpload";
+import { UploadResponse } from "@/services/api";
 
 interface SidebarProps {
   conversations: Conversation[];
@@ -11,6 +13,7 @@ interface SidebarProps {
   onNewChat: () => void;
   onSelectConversation: (id: string) => void;
   onDeleteConversation: (id: string) => void;
+  onUploadSuccess?: (response: UploadResponse) => void;
 }
 
 export function Sidebar({
@@ -19,8 +22,18 @@ export function Sidebar({
   onNewChat,
   onSelectConversation,
   onDeleteConversation,
+  onUploadSuccess,
 }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const handleUploadSuccess = (response: UploadResponse) => {
+    onUploadSuccess?.(response);
+  };
+
+  const handleUploadError = (error: Error) => {
+    console.error('Upload error:', error);
+    // You could add a toast notification here
+  };
 
   return (
     <aside className={`${isCollapsed ? 'w-16' : 'w-64'} transition-all duration-200 bg-[var(--sidebar-bg)] border-r border-[var(--border-color)] flex flex-col`}>
@@ -67,6 +80,16 @@ export function Sidebar({
               />
             ))}
           </nav>
+          
+          {/* Document Upload Section */}
+          <div className="p-2 border-t border-[var(--border-color)]">
+            <DocumentUpload
+              onUploadSuccess={handleUploadSuccess}
+              onUploadError={handleUploadError}
+              className="mb-2"
+            />
+          </div>
+          
           <div className="p-4 border-t border-[var(--border-color)]">
             <p className="text-xs text-[var(--text-secondary)]">
               GoodnightGPT • Beta

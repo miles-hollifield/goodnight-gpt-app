@@ -17,3 +17,4 @@ export { default as ChatContainer } from "./ChatContainer";
 export { ErrorNotification } from "./ErrorNotification";
 export { ConnectionStatus } from "./ConnectionStatus";
 export { ErrorBoundary } from "./ErrorBoundary";
+export { DocumentUpload } from "./DocumentUpload";
