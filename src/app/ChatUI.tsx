@@ -352,7 +352,7 @@ export default function ChatUI() {
               </List>
             </Box>
             <Box sx={{ 
-              p: 2, 
+              p: 4, 
               borderTop: '1px solid #e5e7eb',
               display: 'flex',
               alignItems: 'center',
@@ -539,7 +539,7 @@ export default function ChatUI() {
 
         {/* Input Area */}
         <Box sx={{ 
-          p: 4, 
+          p: 2, 
           borderTop: '1px solid #e5e7eb',
           bgcolor: '#ffffff'
         }}>
@@ -551,7 +551,7 @@ export default function ChatUI() {
                 display: 'flex', 
                 alignItems: 'flex-end', 
                 gap: 2, 
-                p: 2,
+                p: 1.5,
                 border: '1px solid #d1d5db',
                 borderRadius: 2,
                 bgcolor: '#ffffff',
@@ -583,8 +583,8 @@ export default function ChatUI() {
                 sx={{ 
                   bgcolor: input.trim() ? '#000000' : '#e5e7eb',
                   color: input.trim() ? '#ffffff' : '#9ca3af',
-                  width: 36,
-                  height: 36,
+                  width: 32,
+                  height: 32,
                   '&:hover': {
                     bgcolor: input.trim() ? '#374151' : '#d1d5db'
                   },
