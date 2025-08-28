@@ -18,3 +18,4 @@ export { ErrorNotification } from "./ErrorNotification";
 export { ConnectionStatus } from "./ConnectionStatus";
 export { ErrorBoundary } from "./ErrorBoundary";
 export { DocumentUpload } from "./DocumentUpload";
+export { SourcesTab } from "./SourcesTab";

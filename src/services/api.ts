@@ -118,9 +118,10 @@ export interface UploadResponse {
   file_type: string;
   columns?: string[];
   pages?: number;
+  document_id: string;
 }
 
-export async function uploadDocument(file: File): Promise<UploadResponse> {
+export async function uploadDocument(file: File, documentId?: string): Promise<UploadResponse> {
   return withRetry(async () => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout for uploads
@@ -128,6 +129,9 @@ export async function uploadDocument(file: File): Promise<UploadResponse> {
     try {
       const formData = new FormData();
       formData.append('file', file);
+      if (documentId) {
+        formData.append('document_id', documentId);
+      }
       
       const res = await fetch(`${API_BASE}/upload-document`, {
         method: "POST",
@@ -169,4 +173,56 @@ export async function uploadDocument(file: File): Promise<UploadResponse> {
       );
     }
   }, { maxRetries: 1 }); // Only retry once for uploads to avoid long delays
+}
+
+export interface DeleteResponse {
+  message: string;
+  vectors_deleted: number;
+}
+
+export async function deleteDocument(documentId: string): Promise<DeleteResponse> {
+  return withRetry(async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    
+    try {
+      const res = await fetch(`${API_BASE}/delete-document/${encodeURIComponent(documentId)}`, {
+        method: "DELETE",
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new ChatError(
+          ErrorType.UPLOAD_ERROR,
+          `Delete failed: ${res.status}`,
+          errorData.detail || `Failed to delete document ${documentId}`,
+          undefined,
+          false // Don't retry delete operations
+        );
+      }
+      
+      return await res.json();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      
+      if (error instanceof ChatError) {
+        throw error;
+      }
+      
+      if (error instanceof Error) {
+        throw ChatError.fromNetworkError(error);
+      }
+      
+      throw new ChatError(
+        ErrorType.UNKNOWN,
+        'Unknown delete error',
+        'An unexpected error occurred while deleting. Please try again.',
+        undefined,
+        false
+      );
+    }
+  }, { maxRetries: 1 }); // Only retry once for deletions
 }

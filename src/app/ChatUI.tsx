@@ -5,7 +5,7 @@ import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
-import { DocumentUpload } from "@/components/DocumentUpload";
+import { SourcesTab } from "@/components/SourcesTab";
 import { UploadResponse } from "@/services/api";
 
 interface Message {
@@ -61,6 +61,7 @@ export default function ChatUI() {
   const [currentId, setCurrentId] = useState<string>(() => conversations[0].id);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'chats' | 'sources'>('chats');
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const currentConversation = conversations.find(c => c.id === currentId)!;
@@ -182,40 +183,78 @@ export default function ChatUI() {
   return (
     <Box sx={{ display: 'flex', height: '100vh', width: '100%', bgcolor: 'background.default', overflow: 'hidden' }}>
       {/* Sidebar */}
-  <Box component="aside" sx={{ width: 260, bgcolor: 'grey.900', color: 'grey.100', display: 'flex', flexDirection: 'column', borderRight: '1px solid', borderColor: 'grey.800' }}>
-        <Box sx={{ p: 1.5, display: 'flex', gap: 1 }}>
-          <Button onClick={createNewChat} startIcon={<AddIcon />} fullWidth size="small" variant="outlined" sx={{ color: 'grey.100', borderColor: 'grey.700', textTransform: 'none', '&:hover': { borderColor: 'grey.500' } }}>New Chat</Button>
+      <Box component="aside" sx={{ width: 260, bgcolor: 'grey.900', color: 'grey.100', display: 'flex', flexDirection: 'column', borderRight: '1px solid', borderColor: 'grey.800' }}>
+        {/* Tab Navigation */}
+        <Box sx={{ display: 'flex', borderBottom: '1px solid', borderColor: 'grey.800' }}>
+          <Button
+            onClick={() => setActiveTab('chats')}
+            sx={{
+              flex: 1,
+              color: activeTab === 'chats' ? 'primary.light' : 'grey.400',
+              borderBottom: activeTab === 'chats' ? '2px solid' : 'none',
+              borderColor: 'primary.light',
+              borderRadius: 0,
+              textTransform: 'none',
+              fontSize: '0.85rem',
+              py: 1.5,
+              '&:hover': { color: 'grey.100' }
+            }}
+          >
+            💬 Chats
+          </Button>
+          <Button
+            onClick={() => setActiveTab('sources')}
+            sx={{
+              flex: 1,
+              color: activeTab === 'sources' ? 'primary.light' : 'grey.400',
+              borderBottom: activeTab === 'sources' ? '2px solid' : 'none',
+              borderColor: 'primary.light',
+              borderRadius: 0,
+              textTransform: 'none',
+              fontSize: '0.85rem',
+              py: 1.5,
+              '&:hover': { color: 'grey.100' }
+            }}
+          >
+            📚 Sources
+          </Button>
         </Box>
-        <Divider sx={{ borderColor: 'grey.800' }} />
-        <Box sx={{ flex: 1, overflowY: 'auto' }}>
-          <List dense disablePadding aria-label="Conversation list">
-            {conversations.map(conv => (
-              <ListItemButton key={conv.id} selected={conv.id === currentId} onClick={() => setCurrentId(conv.id)} sx={{ alignItems: 'flex-start', py: 1, gap: 1, '&.Mui-selected': { bgcolor: 'grey.800' }, '&:focus-visible': { outline: '2px solid #90caf9', outlineOffset: 2 } }}>
-                <ChatBubbleOutlineIcon fontSize="small" sx={{ mt: '2px', color: conv.id === currentId ? 'primary.light' : 'grey.300' }} />
-                <ListItemText primaryTypographyProps={{ noWrap: true, fontSize: 13, color: 'grey.100' }} primary={conv.title || 'Untitled'} secondaryTypographyProps={{ fontSize: 10, color: 'grey.400' }} secondary={new Date(conv.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} />
-                {conversations.length > 1 && (
-                  <IconButton size="small" onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }} sx={{ ml: 1, color: 'grey.400', '&:hover': { color: 'error.light' }, '&:focus-visible': { outline: '2px solid #f44336', outlineOffset: 2 } }} aria-label="Delete chat">
-                    <DeleteOutlineIcon fontSize="inherit" />
-                  </IconButton>
-                )}
-              </ListItemButton>
-            ))}
-          </List>
-        </Box>
-        <Divider sx={{ borderColor: 'grey.800' }} />
-        
-        {/* Document Upload Section */}
-        <Box sx={{ p: 1.5 }}>
-          <DocumentUpload
-            onUploadSuccess={handleUploadSuccess}
-            onUploadError={handleUploadError}
-          />
-        </Box>
-        
-        <Divider sx={{ borderColor: 'grey.800' }} />
-        <Box sx={{ p: 1.5 }}>
-          <Typography variant="caption" color="grey.400">GoodnightGPT • Beta</Typography>
-        </Box>
+
+        {/* Tab Content */}
+        {activeTab === 'chats' ? (
+          <>
+            <Box sx={{ p: 1.5, display: 'flex', gap: 1 }}>
+              <Button onClick={createNewChat} startIcon={<AddIcon />} fullWidth size="small" variant="outlined" sx={{ color: 'grey.100', borderColor: 'grey.700', textTransform: 'none', '&:hover': { borderColor: 'grey.500' } }}>New Chat</Button>
+            </Box>
+            <Divider sx={{ borderColor: 'grey.800' }} />
+            <Box sx={{ flex: 1, overflowY: 'auto' }}>
+              <List dense disablePadding aria-label="Conversation list">
+                {conversations.map(conv => (
+                  <ListItemButton key={conv.id} selected={conv.id === currentId} onClick={() => setCurrentId(conv.id)} sx={{ alignItems: 'flex-start', py: 1, gap: 1, '&.Mui-selected': { bgcolor: 'grey.800' }, '&:focus-visible': { outline: '2px solid #90caf9', outlineOffset: 2 } }}>
+                    <ChatBubbleOutlineIcon fontSize="small" sx={{ mt: '2px', color: conv.id === currentId ? 'primary.light' : 'grey.300' }} />
+                    <ListItemText primaryTypographyProps={{ noWrap: true, fontSize: 13, color: 'grey.100' }} primary={conv.title || 'Untitled'} secondaryTypographyProps={{ fontSize: 10, color: 'grey.400' }} secondary={new Date(conv.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} />
+                    {conversations.length > 1 && (
+                      <IconButton size="small" onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }} sx={{ ml: 1, color: 'grey.400', '&:hover': { color: 'error.light' }, '&:focus-visible': { outline: '2px solid #f44336', outlineOffset: 2 } }} aria-label="Delete chat">
+                        <DeleteOutlineIcon fontSize="inherit" />
+                      </IconButton>
+                    )}
+                  </ListItemButton>
+                ))}
+              </List>
+            </Box>
+            <Divider sx={{ borderColor: 'grey.800' }} />
+            <Box sx={{ p: 1.5 }}>
+              <Typography variant="caption" color="grey.400">GoodnightGPT • Beta</Typography>
+            </Box>
+          </>
+        ) : (
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 1.5 }}>
+            <SourcesTab
+              onUploadSuccess={handleUploadSuccess}
+              onUploadError={handleUploadError}
+            />
+          </Box>
+        )}
       </Box>
       {/* Main Chat Area */}
       <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
