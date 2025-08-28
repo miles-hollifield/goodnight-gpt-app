@@ -175,12 +175,12 @@ export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) 
           display: flex;
           flex-direction: column;
           height: 100%;
-          gap: 1rem;
+          gap: 1.5rem;
         }
 
         .upload-section {
-          border-bottom: 1px solid #374151;
-          padding-bottom: 1rem;
+          border-bottom: 1px solid #e5e7eb;
+          padding-bottom: 1.5rem;
         }
 
         .sources-list {
@@ -191,53 +191,45 @@ export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) 
         }
 
         .section-title {
-          color: #f9fafb;
-          font-size: 0.9rem;
+          color: #111827;
+          font-size: 16px;
           font-weight: 600;
-          margin: 0 0 0.8rem 0;
+          margin: 0 0 1rem 0;
         }
 
         .section-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 0.8rem;
+          margin-bottom: 1rem;
         }
 
         .docs-count {
-          color: #9ca3af;
-          font-size: 0.75rem;
-        }
-
-        .loading-container {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 2rem;
-          color: #9ca3af;
+          color: #6b7280;
+          font-size: 14px;
         }
 
         .empty-state {
           text-align: center;
-          padding: 2rem 1rem;
+          padding: 3rem 1rem;
           color: #6b7280;
         }
 
         .empty-icon {
-          font-size: 2rem;
-          margin-bottom: 0.5rem;
+          font-size: 3rem;
+          margin-bottom: 1rem;
         }
 
         .empty-state p {
           margin: 0.5rem 0;
           font-weight: 500;
-          color: #9ca3af;
+          color: #374151;
+          font-size: 16px;
         }
 
         .empty-state span {
-          font-size: 0.8rem;
-          color: #6b7280;
+          font-size: 14px;
+          color: #9ca3af;
         }
 
         .documents-list {
@@ -245,23 +237,24 @@ export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) 
           overflow-y: auto;
           display: flex;
           flex-direction: column;
-          gap: 0.5rem;
+          gap: 0.75rem;
         }
 
         .document-item {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 0.75rem;
-          background: #374151;
-          border-radius: 6px;
-          border: 1px solid #4b5563;
+          padding: 1rem;
+          background: #ffffff;
+          border-radius: 8px;
+          border: 1px solid #e5e7eb;
           transition: all 0.2s ease;
         }
 
         .document-item:hover {
-          background: #4b5563;
-          border-color: #6b7280;
+          background: #f9fafb;
+          border-color: #d1d5db;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
         }
 
         .doc-header {
@@ -273,7 +266,7 @@ export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) 
         }
 
         .doc-icon {
-          font-size: 1.2rem;
+          font-size: 1.25rem;
           flex-shrink: 0;
         }
 
@@ -283,8 +276,8 @@ export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) 
         }
 
         .doc-name {
-          color: #f9fafb;
-          font-size: 0.85rem;
+          color: #111827;
+          font-size: 14px;
           font-weight: 500;
           white-space: nowrap;
           overflow: hidden;
@@ -294,59 +287,62 @@ export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) 
 
         .doc-meta {
           display: flex;
-          gap: 0.5rem;
-          font-size: 0.7rem;
-          color: #9ca3af;
+          gap: 0.75rem;
+          font-size: 12px;
+          color: #6b7280;
         }
 
         .file-type {
-          background: #1f2937;
-          padding: 0.1rem 0.3rem;
-          border-radius: 3px;
+          background: #f3f4f6;
+          padding: 0.125rem 0.5rem;
+          border-radius: 4px;
           font-weight: 500;
+          color: #374151;
         }
 
         .chunk-count {
-          color: #60a5fa;
+          color: #2563eb;
         }
 
         .upload-date {
-          color: #9ca3af;
+          color: #6b7280;
         }
 
         .delete-btn {
           background: none;
           border: none;
           cursor: pointer;
-          padding: 0.25rem;
-          border-radius: 4px;
-          color: #9ca3af;
+          padding: 0.5rem;
+          border-radius: 6px;
+          color: #6b7280;
           transition: all 0.2s ease;
           flex-shrink: 0;
+          font-size: 16px;
         }
 
         .delete-btn:hover {
-          background: #ef4444;
-          color: white;
+          background: #fef2f2;
+          color: #dc2626;
         }
 
         .delete-btn:focus {
-          outline: 2px solid #ef4444;
+          outline: 2px solid #dc2626;
           outline-offset: 2px;
         }
 
-        /* Scrollbar styling for dark theme */
+        /* Scrollbar styling */
         .documents-list::-webkit-scrollbar {
-          width: 4px;
+          width: 6px;
         }
 
         .documents-list::-webkit-scrollbar-track {
-          background: #374151;
+          background: #f3f4f6;
+          border-radius: 3px;
         }
 
         .documents-list::-webkit-scrollbar-thumb {
-          background: #6b7280;
-          border-radius: 2px;
+          background: #d1d5db;
+          border-radius: 3px;
         }
 
         .documents-list::-webkit-scrollbar-thumb:hover {

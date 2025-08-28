@@ -152,13 +152,13 @@ export function DocumentUpload({ onUploadSuccess, onUploadError, className = '' 
         }
 
         .upload-area {
-          border: 2px dashed #475569;
+          border: 2px dashed #d1d5db;
           border-radius: 8px;
-          padding: 1.5rem;
+          padding: 2rem;
           text-align: center;
           cursor: pointer;
           transition: all 0.2s ease;
-          background: #1e293b;
+          background: #ffffff;
           min-height: 180px;
           display: flex;
           align-items: center;
@@ -166,19 +166,19 @@ export function DocumentUpload({ onUploadSuccess, onUploadError, className = '' 
         }
 
         .upload-area:hover {
-          border-color: #60a5fa;
-          background: #334155;
+          border-color: #6b7280;
+          background: #f9fafb;
         }
 
         .upload-area.drag-active {
-          border-color: #60a5fa;
-          background: #1e3a8a;
+          border-color: #2563eb;
+          background: #eff6ff;
           transform: scale(1.02);
         }
 
         .upload-area.uploading {
-          border-color: #34d399;
-          background: #022c22;
+          border-color: #059669;
+          background: #f0fdf4;
           cursor: not-allowed;
         }
 
@@ -192,68 +192,69 @@ export function DocumentUpload({ onUploadSuccess, onUploadError, className = '' 
 
         .upload-icon {
           font-size: 2.5rem;
-          margin-bottom: 0.8rem;
+          margin-bottom: 1rem;
         }
 
         .idle-state h3 {
           margin: 0.5rem 0;
-          color: #f9fafb;
-          font-size: 1.1rem;
+          color: #111827;
+          font-size: 18px;
+          font-weight: 600;
         }
 
         .idle-state p {
-          margin: 0.4rem 0;
-          color: #d1d5db;
-          font-size: 0.875rem;
+          margin: 0.5rem 0;
+          color: #6b7280;
+          font-size: 14px;
         }
 
         .file-types {
-          font-size: 0.8rem;
+          font-size: 13px;
           font-weight: 500;
           color: #9ca3af;
         }
 
         .file-size {
-          font-size: 0.8rem;
-          color: #6b7280;
+          font-size: 13px;
+          color: #9ca3af;
         }
 
         .uploading-state {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 0.8rem;
+          gap: 1rem;
         }
 
         .uploading-state p {
-          color: #34d399;
+          color: #059669;
           font-weight: 500;
-          font-size: 0.875rem;
+          font-size: 15px;
         }
 
         .upload-status {
-          margin-top: 0.8rem;
-          padding: 0.6rem;
-          border-radius: 4px;
-          font-size: 0.8rem;
+          margin-top: 1rem;
+          padding: 0.75rem;
+          border-radius: 6px;
+          font-size: 14px;
         }
 
         .upload-status.success {
-          background: #022c22;
-          color: #34d399;
-          border: 1px solid #059669;
+          background: #f0fdf4;
+          color: #166534;
+          border: 1px solid #bbf7d0;
         }
 
         .upload-status.error {
-          background: #7f1d1d;
-          color: #fca5a5;
-          border: 1px solid #dc2626;
+          background: #fef2f2;
+          color: #dc2626;
+          border: 1px solid #fecaca;
         }
 
         .upload-status.info {
-          background: #1e3a8a;
-          color: #93c5fd;
-          border: 1px solid #3b82f6;
+          background: #eff6ff;
+          color: #1d4ed8;
+          border: 1px solid #bfdbfe;
         }
       `}</style>
     </div>

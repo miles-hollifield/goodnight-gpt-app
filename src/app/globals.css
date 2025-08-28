@@ -1,40 +1,44 @@
 @import "tailwindcss";
 
 :root {
-  /* Light theme - NC State colors */
+  /* Modern light theme */
   --background: #ffffff;
-  --foreground: #000000;
-  --sidebar-bg: #f8f8f8;
-  --sidebar-hover: #f0f0f0;
-  --border-color: #e0e0e0;
-  --message-user-bg: #f8f8f8;
+  --foreground: #111827;
+  --sidebar-bg: #ffffff;
+  --sidebar-hover: #f9fafb;
+  --border-color: #e5e7eb;
+  --message-user-bg: #2563eb;
   --message-ai-bg: #ffffff;
   --input-bg: #ffffff;
-  --hover-bg: #f8f8f8;
-  --text-primary: #000000;
-  --text-secondary: #666666;
-  --accent: #CC0000;
-  --header-bg: #CC0000;
-  --header-text: #ffffff;
+  --hover-bg: #f9fafb;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --accent: #2563eb;
+  --header-bg: #ffffff;
+  --header-text: #111827;
+  --shadow-light: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-medium: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* Dark theme - NC State colors adapted for dark mode */
-    --background: #1a1a1a;
-    --foreground: #ffffff;
-    --sidebar-bg: #000000;
-    --sidebar-hover: #333333;
-    --border-color: #333333;
-    --message-user-bg: #1a1a1a;
-    --message-ai-bg: #2a2a2a;
-    --input-bg: #2a2a2a;
-    --hover-bg: #333333;
-    --text-primary: #ffffff;
-    --text-secondary: #cccccc;
-    --accent: #FF3333;
-    --header-bg: #CC0000;
-    --header-text: #ffffff;
+    /* Dark theme fallback */
+    --background: #111827;
+    --foreground: #f9fafb;
+    --sidebar-bg: #1f2937;
+    --sidebar-hover: #374151;
+    --border-color: #374151;
+    --message-user-bg: #2563eb;
+    --message-ai-bg: #1f2937;
+    --input-bg: #1f2937;
+    --hover-bg: #374151;
+    --text-primary: #f9fafb;
+    --text-secondary: #9ca3af;
+    --accent: #3b82f6;
+    --header-bg: #1f2937;
+    --header-text: #f9fafb;
+    --shadow-light: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+    --shadow-medium: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
   }
 }
 
@@ -57,6 +61,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
 }
 
 a {
@@ -66,8 +71,8 @@ a {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -75,12 +80,12 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 4px;
+  background: #d1d5db;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
+  background: #9ca3af;
 }
 
 /* Utility classes */

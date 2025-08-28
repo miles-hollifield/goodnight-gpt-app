@@ -18,35 +18,41 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
   return (
     <Box sx={{ 
-      py: 2,
-      mb: 2,
+      py: 3,
+      mb: 1,
       display: 'flex',
-      justifyContent: isUser ? 'flex-end' : 'flex-start'
+      justifyContent: isUser ? 'flex-end' : 'flex-start',
+      px: 2
     }}>
       <Box sx={{ 
         display: 'flex', 
-        gap: 2,
-        maxWidth: '80%',
+        gap: 2.5,
+        maxWidth: '85%',
         flexDirection: isUser ? 'row-reverse' : 'row',
-        bgcolor: isUser ? 'primary.main' : 'grey.50',
-        borderRadius: 2,
-        p: 2
+        bgcolor: isUser ? '#2563eb' : 'transparent',
+        borderRadius: isUser ? 3 : 0,
+        p: isUser ? 2.5 : 0,
+        border: isUser ? 'none' : '1px solid #f3f4f6',
+        borderLeft: isUser ? 'none' : '4px solid #e5e7eb'
       }}>
         <Avatar sx={{ 
-          bgcolor: isUser ? 'primary.dark' : 'grey.500',
-          width: 40,
-          height: 40
+          bgcolor: isUser ? '#1d4ed8' : '#6b7280',
+          width: 36,
+          height: 36,
+          fontSize: '1rem'
         }}>
-          {isUser ? <PersonIcon /> : <SmartToyIcon />}
+          {isUser ? <PersonIcon fontSize="small" /> : <SmartToyIcon fontSize="small" />}
         </Avatar>
-        <Box sx={{ flex: 1, overflow: 'hidden' }}>
+        <Box sx={{ flex: 1, overflow: 'hidden', pt: isUser ? 0 : 0.5 }}>
           <Typography 
             variant="body1" 
             sx={{ 
               whiteSpace: 'pre-wrap', 
               wordBreak: 'break-words',
-              lineHeight: 1.6,
-              color: isUser ? 'primary.contrastText' : 'text.primary'
+              lineHeight: 1.7,
+              fontSize: '15px',
+              color: isUser ? '#ffffff' : '#111827',
+              fontWeight: isUser ? 400 : 400
             }}
           >
             {message.text}

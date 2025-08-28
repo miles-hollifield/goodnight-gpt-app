@@ -5,6 +5,7 @@ import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
+import SettingsIcon from "@mui/icons-material/Settings";
 import { SourcesTab } from "@/components/SourcesTab";
 import { UploadResponse } from "@/services/api";
 
@@ -53,7 +54,13 @@ export default function ChatUI() {
       const raw = typeof window !== 'undefined' ? localStorage.getItem(LS_KEY) : null;
       if (raw) {
         const parsed: Conversation[] = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Update the global counter to be higher than any existing message ID
+          const allMessageIds = parsed.flatMap(conv => conv.messages.map(msg => msg.id));
+          const maxId = Math.max(...allMessageIds, chatUIMessageIdCounter);
+          chatUIMessageIdCounter = maxId + 1;
+          return parsed;
+        }
       }
     } catch { /* ignore */ }
     return [createBlankConversation()];
@@ -181,74 +188,184 @@ export default function ChatUI() {
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', width: '100%', bgcolor: 'background.default', overflow: 'hidden' }}>
+    <Box sx={{ display: 'flex', height: '100vh', width: '100%', bgcolor: '#ffffff', overflow: 'hidden' }}>
       {/* Sidebar */}
-      <Box component="aside" sx={{ width: 260, bgcolor: 'grey.900', color: 'grey.100', display: 'flex', flexDirection: 'column', borderRight: '1px solid', borderColor: 'grey.800' }}>
+      <Box component="aside" sx={{ 
+        width: 260, 
+        bgcolor: '#f7f7f8', 
+        color: '#374151', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        borderRight: '1px solid #e5e7eb',
+        position: 'relative'
+      }}>
         {/* Tab Navigation */}
-        <Box sx={{ display: 'flex', borderBottom: '1px solid', borderColor: 'grey.800' }}>
+        <Box sx={{ 
+          display: 'flex', 
+          borderBottom: '1px solid #e5e7eb',
+          bgcolor: '#ffffff'
+        }}>
           <Button
             onClick={() => setActiveTab('chats')}
             sx={{
               flex: 1,
-              color: activeTab === 'chats' ? 'primary.light' : 'grey.400',
-              borderBottom: activeTab === 'chats' ? '2px solid' : 'none',
-              borderColor: 'primary.light',
+              color: activeTab === 'chats' ? '#000000' : '#6b7280',
+              borderBottom: activeTab === 'chats' ? '2px solid #000000' : 'none',
               borderRadius: 0,
               textTransform: 'none',
-              fontSize: '0.85rem',
+              fontSize: '14px',
+              fontWeight: activeTab === 'chats' ? 600 : 400,
               py: 1.5,
-              '&:hover': { color: 'grey.100' }
+              px: 2,
+              '&:hover': { 
+                color: '#000000',
+                bgcolor: '#f9fafb'
+              }
             }}
           >
-            💬 Chats
+            Chats
           </Button>
           <Button
             onClick={() => setActiveTab('sources')}
             sx={{
               flex: 1,
-              color: activeTab === 'sources' ? 'primary.light' : 'grey.400',
-              borderBottom: activeTab === 'sources' ? '2px solid' : 'none',
-              borderColor: 'primary.light',
+              color: activeTab === 'sources' ? '#000000' : '#6b7280',
+              borderBottom: activeTab === 'sources' ? '2px solid #000000' : 'none',
               borderRadius: 0,
               textTransform: 'none',
-              fontSize: '0.85rem',
+              fontSize: '14px',
+              fontWeight: activeTab === 'sources' ? 600 : 400,
               py: 1.5,
-              '&:hover': { color: 'grey.100' }
+              px: 2,
+              '&:hover': { 
+                color: '#000000',
+                bgcolor: '#f9fafb'
+              }
             }}
           >
-            📚 Sources
+            Sources
           </Button>
         </Box>
 
         {/* Tab Content */}
         {activeTab === 'chats' ? (
           <>
-            <Box sx={{ p: 1.5, display: 'flex', gap: 1 }}>
-              <Button onClick={createNewChat} startIcon={<AddIcon />} fullWidth size="small" variant="outlined" sx={{ color: 'grey.100', borderColor: 'grey.700', textTransform: 'none', '&:hover': { borderColor: 'grey.500' } }}>New Chat</Button>
+            <Box sx={{ p: 2 }}>
+              <Button 
+                onClick={createNewChat} 
+                startIcon={<AddIcon />} 
+                fullWidth 
+                variant="outlined" 
+                sx={{ 
+                  color: '#374151',
+                  borderColor: '#d1d5db',
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  py: 1,
+                  '&:hover': { 
+                    borderColor: '#9ca3af',
+                    bgcolor: '#f9fafb'
+                  }
+                }}
+              >
+                New Chat
+              </Button>
             </Box>
-            <Divider sx={{ borderColor: 'grey.800' }} />
-            <Box sx={{ flex: 1, overflowY: 'auto' }}>
-              <List dense disablePadding aria-label="Conversation list">
+            <Box sx={{ flex: 1, overflowY: 'auto', px: 1 }}>
+              <List dense disablePadding>
                 {conversations.map(conv => (
-                  <ListItemButton key={conv.id} selected={conv.id === currentId} onClick={() => setCurrentId(conv.id)} sx={{ alignItems: 'flex-start', py: 1, gap: 1, '&.Mui-selected': { bgcolor: 'grey.800' }, '&:focus-visible': { outline: '2px solid #90caf9', outlineOffset: 2 } }}>
-                    <ChatBubbleOutlineIcon fontSize="small" sx={{ mt: '2px', color: conv.id === currentId ? 'primary.light' : 'grey.300' }} />
-                    <ListItemText primaryTypographyProps={{ noWrap: true, fontSize: 13, color: 'grey.100' }} primary={conv.title || 'Untitled'} secondaryTypographyProps={{ fontSize: 10, color: 'grey.400' }} secondary={new Date(conv.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} />
-                    {conversations.length > 1 && (
-                      <IconButton size="small" onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }} sx={{ ml: 1, color: 'grey.400', '&:hover': { color: 'error.light' }, '&:focus-visible': { outline: '2px solid #f44336', outlineOffset: 2 } }} aria-label="Delete chat">
-                        <DeleteOutlineIcon fontSize="inherit" />
-                      </IconButton>
-                    )}
+                  <ListItemButton 
+                    key={conv.id} 
+                    selected={conv.id === currentId} 
+                    onClick={() => setCurrentId(conv.id)} 
+                    sx={{ 
+                      borderRadius: 1,
+                      mx: 1,
+                      mb: 0.5,
+                      py: 1.5,
+                      px: 2,
+                      '&.Mui-selected': { 
+                        bgcolor: '#e5e7eb',
+                        '&:hover': {
+                          bgcolor: '#d1d5db'
+                        }
+                      },
+                      '&:hover': {
+                        bgcolor: '#f3f4f6'
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1.5 }}>
+                      <ChatBubbleOutlineIcon 
+                        fontSize="small" 
+                        sx={{ 
+                          color: conv.id === currentId ? '#374151' : '#6b7280',
+                          flexShrink: 0
+                        }} 
+                      />
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            fontWeight: 500,
+                            color: '#374151',
+                            fontSize: '14px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {conv.title || 'New Chat'}
+                        </Typography>
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            color: '#9ca3af',
+                            fontSize: '12px'
+                          }}
+                        >
+                          {new Date(conv.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </Typography>
+                      </Box>
+                      {conversations.length > 1 && (
+                        <IconButton 
+                          size="small" 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            deleteConversation(conv.id); 
+                          }} 
+                          sx={{ 
+                            color: '#9ca3af',
+                            p: 0.5,
+                            '&:hover': { 
+                              color: '#ef4444',
+                              bgcolor: '#fef2f2'
+                            }
+                          }}
+                        >
+                          <DeleteOutlineIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                    </Box>
                   </ListItemButton>
                 ))}
               </List>
             </Box>
-            <Divider sx={{ borderColor: 'grey.800' }} />
-            <Box sx={{ p: 1.5 }}>
-              <Typography variant="caption" color="grey.400">GoodnightGPT • Beta</Typography>
+            <Box sx={{ 
+              p: 2, 
+              borderTop: '1px solid #e5e7eb',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
+            }}>
+              <SettingsIcon sx={{ color: '#9ca3af', fontSize: 16 }} />
+              <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '12px' }}>
+                Settings
+              </Typography>
             </Box>
           </>
         ) : (
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 1.5 }}>
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
             <SourcesTab
               onUploadSuccess={handleUploadSuccess}
               onUploadError={handleUploadError}
@@ -257,62 +374,230 @@ export default function ChatUI() {
         )}
       </Box>
       {/* Main Chat Area */}
-      <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-        <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="subtitle1" fontWeight={600}>{currentConversation.title === 'New Chat' ? 'GoodnightGPT' : currentConversation.title}</Typography>
-          {loading && <CircularProgress size={18} />}
+      <Box component="main" sx={{ 
+        flex: 1, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        bgcolor: '#ffffff'
+      }}>
+        {/* Header */}
+        <Box sx={{ 
+          p: 3, 
+          borderBottom: '1px solid #e5e7eb',
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          bgcolor: '#ffffff'
+        }}>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontWeight: 600,
+              color: '#111827',
+              fontSize: '18px'
+            }}
+          >
+            {currentConversation.title === 'New Chat' ? 'GoodnightGPT' : currentConversation.title}
+          </Typography>
+          {loading && <CircularProgress size={20} sx={{ color: '#6b7280' }} />}
         </Box>
-        <Box sx={{ flex: 1, overflowY: 'auto', px: 2, py: 3 }}>
-          <Stack spacing={3} maxWidth={860} mx="auto">
-            {messages.map((msg) => (
-              <Fade in key={msg.id} timeout={200}>
-                <Box display="flex" gap={2} alignItems="flex-start" flexDirection={msg.sender === 'user' ? 'row-reverse' : 'row'} role="group" aria-label={msg.sender === 'user' ? 'User message' : 'AI message'}>
-                  <Avatar sx={{ bgcolor: msg.sender === 'user' ? 'primary.main' : 'grey.700', width: 40, height: 40, fontSize: 16 }} aria-hidden>{msg.sender === 'user' ? 'You' : 'AI'}</Avatar>
-                  <Paper variant="outlined" sx={{ p: 2, flexShrink: 1, maxWidth: '100%', bgcolor: msg.sender === 'user' ? 'primary.light' : 'background.paper', borderColor: 'divider' }}>
-                    <Typography variant="body1" sx={{ whiteSpace: 'pre-line', color: msg.sender === 'user' ? 'grey.900' : 'text.primary' }}>{msg.text}</Typography>
-                    {msg.sender === 'ai' && msg.context && msg.context.length > 0 && (
-                      <Box mt={1}>
-                        <Typography variant="caption" color="text.secondary">Sources:</Typography>
-                        <Stack spacing={0.5} mt={0.5}>
-                          {msg.context.slice(0,3).map((c) => (
-                            <Tooltip key={c.id} title={`Score: ${c.score.toFixed(3)}\n${c.text}`} placement="right" arrow>
-                              <Paper variant="outlined" sx={{ p: 0.5, bgcolor: 'grey.50', borderColor: 'grey.200' }}>
-                                <Typography variant="caption" noWrap color="grey.800">{c.text}</Typography>
-                              </Paper>
-                            </Tooltip>
-                          ))}
-                        </Stack>
-                      </Box>
-                    )}
-                  </Paper>
+
+        {/* Messages Area */}
+        <Box sx={{ 
+          flex: 1, 
+          overflowY: 'auto', 
+          px: 4, 
+          py: 4,
+          bgcolor: '#ffffff'
+        }}>
+          <Stack spacing={4} maxWidth={768} mx="auto">
+            {messages.map((msg, msgIndex) => (
+              <Fade in key={`${currentId}-${msg.id}-${msgIndex}`} timeout={300}>
+                <Box 
+                  display="flex" 
+                  gap={3} 
+                  alignItems="flex-start" 
+                  flexDirection={msg.sender === 'user' ? 'row-reverse' : 'row'}
+                >
+                  <Avatar 
+                    sx={{ 
+                      bgcolor: msg.sender === 'user' ? '#000000' : '#f3f4f6',
+                      color: msg.sender === 'user' ? '#ffffff' : '#374151',
+                      width: 36, 
+                      height: 36, 
+                      fontSize: 14,
+                      fontWeight: 600
+                    }}
+                  >
+                    {msg.sender === 'user' ? 'You' : 'AI'}
+                  </Avatar>
+                  <Box sx={{ 
+                    flexShrink: 1, 
+                    maxWidth: '70%',
+                    minWidth: 0
+                  }}>
+                    <Paper 
+                      variant="outlined" 
+                      sx={{ 
+                        p: 3, 
+                        bgcolor: msg.sender === 'user' ? '#f9fafb' : '#ffffff',
+                        border: msg.sender === 'user' ? '1px solid #e5e7eb' : '1px solid #e5e7eb',
+                        borderRadius: 2,
+                        boxShadow: 'none'
+                      }}
+                    >
+                      <Typography 
+                        variant="body1" 
+                        sx={{ 
+                          whiteSpace: 'pre-line',
+                          color: '#374151',
+                          fontSize: '15px',
+                          lineHeight: 1.6
+                        }}
+                      >
+                        {msg.text}
+                      </Typography>
+                      {msg.sender === 'ai' && msg.context && msg.context.length > 0 && (
+                        <Box mt={2}>
+                          <Typography 
+                            variant="caption" 
+                            sx={{ 
+                              color: '#6b7280',
+                              fontSize: '12px',
+                              fontWeight: 500,
+                              mb: 1,
+                              display: 'block'
+                            }}
+                          >
+                            Sources:
+                          </Typography>
+                          <Stack spacing={1}>
+                            {msg.context.slice(0,3).map((c, contextIndex) => (
+                              <Tooltip 
+                                key={`${currentId}-${msg.id}-context-${contextIndex}-${c.id}`} 
+                                title={`Score: ${c.score.toFixed(3)}\n${c.text}`} 
+                                placement="top" 
+                                arrow
+                              >
+                                <Paper 
+                                  variant="outlined" 
+                                  sx={{ 
+                                    p: 1.5, 
+                                    bgcolor: '#f9fafb',
+                                    borderColor: '#e5e7eb',
+                                    borderRadius: 1,
+                                    cursor: 'pointer',
+                                    '&:hover': {
+                                      bgcolor: '#f3f4f6'
+                                    }
+                                  }}
+                                >
+                                  <Typography 
+                                    variant="caption" 
+                                    sx={{ 
+                                      color: '#6b7280',
+                                      fontSize: '12px',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                      display: 'block'
+                                    }}
+                                  >
+                                    {c.text}
+                                  </Typography>
+                                </Paper>
+                              </Tooltip>
+                            ))}
+                          </Stack>
+                        </Box>
+                      )}
+                    </Paper>
+                  </Box>
                 </Box>
               </Fade>
             ))}
             {loading && (
-              <Box display="flex" gap={2} alignItems="center">
-                <Avatar sx={{ bgcolor: 'grey.700', width: 40, height: 40, fontSize: 16 }} aria-hidden>AI</Avatar>
-                <CircularProgress size={22} />
+              <Box display="flex" gap={3} alignItems="center">
+                <Avatar 
+                  sx={{ 
+                    bgcolor: '#f3f4f6',
+                    color: '#374151',
+                    width: 36, 
+                    height: 36, 
+                    fontSize: 14,
+                    fontWeight: 600
+                  }}
+                >
+                  AI
+                </Avatar>
+                <CircularProgress size={24} sx={{ color: '#6b7280' }} />
               </Box>
             )}
             <div ref={chatEndRef} />
           </Stack>
         </Box>
-        <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider', bgcolor: 'background.default' }}>
-          <Paper component="form" onSubmit={e => { e.preventDefault(); handleSend(); }} sx={{ display: 'flex', alignItems: 'flex-end', gap: 1, p: 1.5, maxWidth: 860, mx: 'auto' }}>
-            <InputBase
-              sx={{ flex: 1, maxHeight: 200, overflow: 'auto' }}
-              placeholder="Type your message..."
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={handleInputKeyDown}
-              multiline
-              autoFocus
-              inputProps={{ 'aria-label': 'Type your message' }}
-            />
-            <IconButton color="primary" onClick={handleSend} disabled={!input.trim() || loading} aria-label="send message" sx={{ alignSelf: 'flex-end' }}>
-              <SendIcon />
-            </IconButton>
-          </Paper>
+
+        {/* Input Area */}
+        <Box sx={{ 
+          p: 4, 
+          borderTop: '1px solid #e5e7eb',
+          bgcolor: '#ffffff'
+        }}>
+          <Box maxWidth={768} mx="auto">
+            <Paper 
+              component="form" 
+              onSubmit={e => { e.preventDefault(); handleSend(); }} 
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'flex-end', 
+                gap: 2, 
+                p: 2,
+                border: '1px solid #d1d5db',
+                borderRadius: 2,
+                bgcolor: '#ffffff',
+                boxShadow: 'none',
+                '&:focus-within': {
+                  borderColor: '#6b7280'
+                }
+              }}
+            >
+              <InputBase
+                sx={{ 
+                  flex: 1, 
+                  fontSize: '15px',
+                  color: '#374151',
+                  '& input::placeholder': {
+                    color: '#9ca3af'
+                  }
+                }}
+                placeholder="Type your message..."
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={handleInputKeyDown}
+                multiline
+                maxRows={4}
+              />
+              <IconButton 
+                onClick={handleSend} 
+                disabled={!input.trim() || loading}
+                sx={{ 
+                  bgcolor: input.trim() ? '#000000' : '#e5e7eb',
+                  color: input.trim() ? '#ffffff' : '#9ca3af',
+                  width: 36,
+                  height: 36,
+                  '&:hover': {
+                    bgcolor: input.trim() ? '#374151' : '#d1d5db'
+                  },
+                  '&:disabled': {
+                    bgcolor: '#e5e7eb',
+                    color: '#9ca3af'
+                  }
+                }}
+              >
+                <SendIcon fontSize="small" />
+              </IconButton>
+            </Paper>
+          </Box>
         </Box>
       </Box>
     </Box>
