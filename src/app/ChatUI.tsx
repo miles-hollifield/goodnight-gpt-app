@@ -74,36 +74,44 @@ export default function ChatUI() {
   const currentConversation = conversations.find(c => c.id === currentId)!;
   const messages = currentConversation.messages;
 
-  const persist = useCallback((next: Conversation[]) => {
-    setConversations(next);
-    try { localStorage.setItem(LS_KEY, JSON.stringify(next)); } catch { /* ignore */ }
-  }, []);
-
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const updateConversation = (convId: string, updater: (c: Conversation) => Conversation) => {
-    persist(conversations.map(c => c.id === convId ? updater({ ...c }) : c));
-  };
+  const updateConversation = useCallback((convId: string, updater: (c: Conversation) => Conversation) => {
+    setConversations(prevConversations => {
+      const updated = prevConversations.map(c => c.id === convId ? updater({ ...c }) : c);
+      try { localStorage.setItem(LS_KEY, JSON.stringify(updated)); } catch { /* ignore */ }
+      return updated;
+    });
+  }, []);
 
   const createNewChat = () => {
     const fresh = createBlankConversation();
-    persist([fresh, ...conversations]);
+    setConversations(prev => {
+      const updated = [fresh, ...prev];
+      try { localStorage.setItem(LS_KEY, JSON.stringify(updated)); } catch { /* ignore */ }
+      return updated;
+    });
     setCurrentId(fresh.id);
     setInput("");
   };
 
   const deleteConversation = (convId: string) => {
-    const filtered = conversations.filter(c => c.id !== convId);
-    if (filtered.length === 0) {
-      const fresh = createBlankConversation();
-      persist([fresh]);
-      setCurrentId(fresh.id);
-    } else {
-      persist(filtered);
-      if (convId === currentId) setCurrentId(filtered[0].id);
-    }
+    setConversations(prev => {
+      const filtered = prev.filter(c => c.id !== convId);
+      let updated;
+      if (filtered.length === 0) {
+        const fresh = createBlankConversation();
+        updated = [fresh];
+        setCurrentId(fresh.id);
+      } else {
+        updated = filtered;
+        if (convId === currentId) setCurrentId(filtered[0].id);
+      }
+      try { localStorage.setItem(LS_KEY, JSON.stringify(updated)); } catch { /* ignore */ }
+      return updated;
+    });
   };
 
   const handleUploadSuccess = (response: UploadResponse) => {
@@ -139,17 +147,19 @@ export default function ChatUI() {
   const handleSend = async () => {
     if (!input.trim() || loading) return;
     const userMsg: Message = { id: chatUIMessageIdCounter++, sender: "user", text: input };
+    console.log("Sending user message:", userMsg);
     setInput("");
     setLoading(true);
     // Add user message immediately
     updateConversation(currentId, c => {
-      c.messages = [...c.messages, userMsg];
-      if (c.title === "New Chat") {
-        const firstContentLine = userMsg.text.split(/\n/)[0].slice(0, 40) || "New Chat";
-        c.title = firstContentLine;
-      }
-      c.updatedAt = Date.now();
-      return c;
+      const updated = {
+        ...c,
+        messages: [...c.messages, userMsg],
+        title: c.title === "New Chat" ? (userMsg.text.split(/\n/)[0].slice(0, 40) || "New Chat") : c.title,
+        updatedAt: Date.now()
+      };
+      console.log("Updated conversation with user message:", updated);
+      return updated;
     });
     try {
       const base = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
@@ -166,15 +176,24 @@ export default function ChatUI() {
         text: data.response ?? "(no response)",
         context: data.context
       };
+      console.log("Adding AI message:", aiMsg);
       updateConversation(currentId, c => {
-        c.messages = [...c.messages, aiMsg];
-        c.updatedAt = Date.now();
-        return c;
+        const updated = {
+          ...c,
+          messages: [...c.messages, aiMsg],
+          updatedAt: Date.now()
+        };
+        console.log("Updated conversation with AI message:", updated);
+        return updated;
       });
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : 'Unknown error';
       const errMsg: Message = { id: chatUIMessageIdCounter++, sender: "ai", text: `Error: ${message}` };
-      updateConversation(currentId, c => { c.messages = [...c.messages, errMsg]; c.updatedAt = Date.now(); return c; });
+      updateConversation(currentId, c => ({
+        ...c,
+        messages: [...c.messages, errMsg],
+        updatedAt: Date.now()
+      }));
     } finally {
       setLoading(false);
     }
@@ -421,7 +440,7 @@ export default function ChatUI() {
                 >
                   <Avatar 
                     sx={{ 
-                      bgcolor: msg.sender === 'user' ? '#000000' : '#f3f4f6',
+                      bgcolor: msg.sender === 'user' ? '#1d4ed8' : '#f3f4f6',
                       color: msg.sender === 'user' ? '#ffffff' : '#374151',
                       width: 36, 
                       height: 36, 
@@ -440,8 +459,8 @@ export default function ChatUI() {
                       variant="outlined" 
                       sx={{ 
                         p: 3, 
-                        bgcolor: msg.sender === 'user' ? '#f9fafb' : '#ffffff',
-                        border: msg.sender === 'user' ? '1px solid #e5e7eb' : '1px solid #e5e7eb',
+                        bgcolor: msg.sender === 'user' ? '#2563eb' : '#ffffff',
+                        border: msg.sender === 'user' ? '1px solid #2563eb' : '1px solid #e5e7eb',
                         borderRadius: 2,
                         boxShadow: 'none'
                       }}
@@ -450,7 +469,7 @@ export default function ChatUI() {
                         variant="body1" 
                         sx={{ 
                           whiteSpace: 'pre-line',
-                          color: '#374151',
+                          color: msg.sender === 'user' ? '#ffffff' : '#374151',
                           fontSize: '15px',
                           lineHeight: 1.6
                         }}
