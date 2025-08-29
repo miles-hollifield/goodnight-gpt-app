@@ -7,6 +7,8 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import PersonIcon from "@mui/icons-material/Person";
 import FolderIcon from "@mui/icons-material/Folder";
+import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrowLeft";
+import MenuIcon from "@mui/icons-material/Menu";
 import { SourcesTab } from "@/components/SourcesTab";
 import { UploadResponse } from "@/services/api";
 
@@ -97,6 +99,7 @@ export default function ChatUI() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeView, setActiveView] = useState<'chat' | 'sources'>('chat');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const currentConversation = conversations.find(c => c.id === currentId)!;
@@ -244,15 +247,54 @@ export default function ChatUI() {
   return (
     <Box sx={{ display: 'flex', height: '100vh', width: '100%', bgcolor: '#ffffff', overflow: 'hidden' }}>
       {/* Sidebar */}
-      <Box component="aside" sx={{ 
-        width: 260, 
-        bgcolor: '#f7f7f8', 
-        color: '#374151', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        borderRight: '1px solid #e5e7eb',
-        position: 'relative'
-      }}>
+      {sidebarOpen && (
+        <Box component="aside" sx={{ 
+          width: 260, 
+          bgcolor: '#f7f7f8', 
+          color: '#374151', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          borderRight: '1px solid #e5e7eb',
+          position: 'relative'
+        }}>
+          {/* Sidebar Header */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            p: 2,
+            borderBottom: '1px solid #e5e7eb'
+          }}>
+            {/* Logo/Icon Area */}
+            <Box sx={{
+              width: 32,
+              height: 32,
+              borderRadius: 2,
+              bgcolor: '#2563eb',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Typography sx={{ color: '#ffffff', fontWeight: 'bold', fontSize: '16px' }}>
+                GN
+              </Typography>
+            </Box>
+            
+            {/* Collapse Button */}
+            <IconButton 
+              onClick={() => setSidebarOpen(false)}
+              size="small"
+              sx={{ 
+                color: '#6b7280',
+                '&:hover': { 
+                  color: '#374151',
+                  bgcolor: '#f3f4f6'
+                }
+              }}
+            >
+              <KeyboardDoubleArrowLeftIcon fontSize="small" />
+            </IconButton>
+          </Box>
         {/* New Chat Button */}
         <Box sx={{ p: 2 }}>
           <Button 
@@ -414,6 +456,8 @@ export default function ChatUI() {
           </Box>
         </Box>
       </Box>
+      )}
+
       {/* Main Content Area */}
       <Box component="main" sx={{ 
         flex: 1, 
@@ -432,16 +476,32 @@ export default function ChatUI() {
               alignItems: 'center',
               bgcolor: '#ffffff'
             }}>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 600,
-                  color: '#111827',
-                  fontSize: '18px'
-                }}
-              >
-                GoodnightGPT
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                {!sidebarOpen && (
+                  <IconButton 
+                    onClick={() => setSidebarOpen(true)}
+                    sx={{ 
+                      color: '#6b7280',
+                      '&:hover': { 
+                        color: '#374151',
+                        bgcolor: '#f3f4f6'
+                      }
+                    }}
+                  >
+                    <MenuIcon />
+                  </IconButton>
+                )}
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: '#111827',
+                    fontSize: '18px'
+                  }}
+                >
+                  GoodnightGPT
+                </Typography>
+              </Box>
               {loading && <CircularProgress size={20} sx={{ color: '#6b7280' }} />}
             </Box>
 
@@ -651,16 +711,32 @@ export default function ChatUI() {
               borderBottom: '1px solid #e5e7eb',
               bgcolor: '#ffffff'
             }}>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 600,
-                  color: '#111827',
-                  fontSize: '18px'
-                }}
-              >
-                Library
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                {!sidebarOpen && (
+                  <IconButton 
+                    onClick={() => setSidebarOpen(true)}
+                    sx={{ 
+                      color: '#6b7280',
+                      '&:hover': { 
+                        color: '#374151',
+                        bgcolor: '#f3f4f6'
+                      }
+                    }}
+                  >
+                    <MenuIcon />
+                  </IconButton>
+                )}
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: '#111827',
+                    fontSize: '18px'
+                  }}
+                >
+                  Library
+                </Typography>
+              </Box>
             </Box>
             
             {/* Sources Content */}
