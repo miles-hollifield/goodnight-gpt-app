@@ -5,7 +5,8 @@ import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
-import SettingsIcon from "@mui/icons-material/Settings";
+import PersonIcon from "@mui/icons-material/Person";
+import FolderIcon from "@mui/icons-material/Folder";
 import { SourcesTab } from "@/components/SourcesTab";
 import { UploadResponse } from "@/services/api";
 
@@ -33,7 +34,7 @@ interface RetrievedContext {
 
 const LS_KEY = "gn_conversations_v1";
 
-const initialGreeting = "Hello! How can I help you with your scholarship questions today?";
+const initialGreeting = "Hello! How can I help you with the Goodnight program today?";
 
 let chatUIMessageIdCounter = 3000; // Start higher to avoid conflicts
 
@@ -46,6 +47,33 @@ function createBlankConversation(): Conversation {
     createdAt: now,
     updatedAt: now
   };
+}
+
+function generateChatTitle(userMessage: string): string {
+  // Remove common question words and clean up the message
+  const cleaned = userMessage
+    .replace(/^(what|how|when|where|why|who|can|could|would|should|do|does|did|is|are|was|were|tell me|explain|help me)\s+/i, '')
+    .trim();
+  
+  // Take the first sentence or meaningful phrase
+  const firstSentence = cleaned.split(/[.!?]/)[0].trim();
+  
+  // If it's too long, truncate intelligently
+  let title;
+  if (firstSentence.length > 50) {
+    const words = firstSentence.split(' ');
+    let truncated = '';
+    for (const word of words) {
+      if ((truncated + word).length > 47) break;
+      truncated += (truncated ? ' ' : '') + word;
+    }
+    title = truncated + '...';
+  } else {
+    title = firstSentence || "New Chat";
+  }
+  
+  // Capitalize the first letter
+  return title.charAt(0).toUpperCase() + title.slice(1);
 }
 
 export default function ChatUI() {
@@ -68,7 +96,7 @@ export default function ChatUI() {
   const [currentId, setCurrentId] = useState<string>(() => conversations[0].id);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'chats' | 'sources'>('chats');
+  const [activeView, setActiveView] = useState<'chat' | 'sources'>('chat');
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const currentConversation = conversations.find(c => c.id === currentId)!;
@@ -94,6 +122,7 @@ export default function ChatUI() {
       return updated;
     });
     setCurrentId(fresh.id);
+    setActiveView('chat');
     setInput("");
   };
 
@@ -152,10 +181,16 @@ export default function ChatUI() {
     setLoading(true);
     // Add user message immediately
     updateConversation(currentId, c => {
+      // Generate a more meaningful title from the user's message
+      let newTitle = c.title;
+      if (c.title === "New Chat") {
+        newTitle = generateChatTitle(userMsg.text);
+      }
+      
       const updated = {
         ...c,
         messages: [...c.messages, userMsg],
-        title: c.title === "New Chat" ? (userMsg.text.split(/\n/)[0].slice(0, 40) || "New Chat") : c.title,
+        title: newTitle,
         updatedAt: Date.now()
       };
       console.log("Updated conversation with user message:", updated);
@@ -218,406 +253,432 @@ export default function ChatUI() {
         borderRight: '1px solid #e5e7eb',
         position: 'relative'
       }}>
-        {/* Tab Navigation */}
-        <Box sx={{ 
-          display: 'flex', 
-          borderBottom: '1px solid #e5e7eb',
-          bgcolor: '#ffffff'
-        }}>
-          <Button
-            onClick={() => setActiveTab('chats')}
-            sx={{
-              flex: 1,
-              color: activeTab === 'chats' ? '#000000' : '#6b7280',
-              borderBottom: activeTab === 'chats' ? '2px solid #000000' : 'none',
-              borderRadius: 0,
+        {/* New Chat Button */}
+        <Box sx={{ p: 2 }}>
+          <Button 
+            onClick={createNewChat} 
+            startIcon={<AddIcon />} 
+            fullWidth 
+            variant="outlined" 
+            sx={{ 
+              color: '#374151',
+              borderColor: '#d1d5db',
               textTransform: 'none',
-              fontSize: '14px',
-              fontWeight: activeTab === 'chats' ? 600 : 400,
+              fontWeight: 500,
               py: 1.5,
-              px: 2,
+              borderRadius: 2,
               '&:hover': { 
-                color: '#000000',
+                borderColor: '#9ca3af',
                 bgcolor: '#f9fafb'
               }
             }}
           >
-            Chats
-          </Button>
-          <Button
-            onClick={() => setActiveTab('sources')}
-            sx={{
-              flex: 1,
-              color: activeTab === 'sources' ? '#000000' : '#6b7280',
-              borderBottom: activeTab === 'sources' ? '2px solid #000000' : 'none',
-              borderRadius: 0,
-              textTransform: 'none',
-              fontSize: '14px',
-              fontWeight: activeTab === 'sources' ? 600 : 400,
-              py: 1.5,
-              px: 2,
-              '&:hover': { 
-                color: '#000000',
-                bgcolor: '#f9fafb'
-              }
-            }}
-          >
-            Sources
+            New Chat
           </Button>
         </Box>
 
-        {/* Tab Content */}
-        {activeTab === 'chats' ? (
-          <>
-            <Box sx={{ p: 2 }}>
-              <Button 
-                onClick={createNewChat} 
-                startIcon={<AddIcon />} 
-                fullWidth 
-                variant="outlined" 
+        {/* Navigation Links */}
+        <Box sx={{ px: 2, pb: 2 }}>
+          <Button
+            onClick={() => setActiveView('sources')}
+            startIcon={<FolderIcon />}
+            fullWidth
+            sx={{
+              color: activeView === 'sources' ? '#374151' : '#6b7280',
+              bgcolor: activeView === 'sources' ? '#e5e7eb' : 'transparent',
+              textTransform: 'none',
+              fontWeight: 500,
+              py: 1.5,
+              px: 2,
+              borderRadius: 2,
+              justifyContent: 'flex-start',
+              '&:hover': { 
+                bgcolor: '#f3f4f6',
+                color: '#374151'
+              }
+            }}
+          >
+            Library
+          </Button>
+        </Box>
+
+        {/* Chat History */}
+        <Box sx={{ flex: 1, overflowY: 'auto', px: 2 }}>
+          <Typography variant="caption" sx={{ color: '#6b7280', fontSize: '12px', px: 1, mb: 1, display: 'block' }}>
+            Recent
+          </Typography>
+          <List dense disablePadding>
+            {conversations.map(conv => (
+              <ListItemButton 
+                key={conv.id} 
+                selected={conv.id === currentId} 
+                onClick={() => {setCurrentId(conv.id); setActiveView('chat');}} 
                 sx={{ 
-                  color: '#374151',
-                  borderColor: '#d1d5db',
-                  textTransform: 'none',
-                  fontWeight: 500,
-                  py: 1,
-                  '&:hover': { 
-                    borderColor: '#9ca3af',
-                    bgcolor: '#f9fafb'
+                  borderRadius: 2,
+                  mb: 0.5,
+                  py: 1.5,
+                  px: 2,
+                  '&.Mui-selected': { 
+                    bgcolor: '#e5e7eb',
+                    '&:hover': {
+                      bgcolor: '#d1d5db'
+                    }
+                  },
+                  '&:hover': {
+                    bgcolor: '#f3f4f6'
                   }
                 }}
               >
-                New Chat
-              </Button>
-            </Box>
-            <Box sx={{ flex: 1, overflowY: 'auto', px: 1 }}>
-              <List dense disablePadding>
-                {conversations.map(conv => (
-                  <ListItemButton 
-                    key={conv.id} 
-                    selected={conv.id === currentId} 
-                    onClick={() => setCurrentId(conv.id)} 
+                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1.5 }}>
+                  <ChatBubbleOutlineIcon 
+                    fontSize="small" 
                     sx={{ 
-                      borderRadius: 1,
-                      mx: 1,
-                      mb: 0.5,
-                      py: 1.5,
-                      px: 2,
-                      '&.Mui-selected': { 
-                        bgcolor: '#e5e7eb',
-                        '&:hover': {
-                          bgcolor: '#d1d5db'
+                      color: conv.id === currentId ? '#374151' : '#6b7280',
+                      flexShrink: 0
+                    }} 
+                  />
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        fontWeight: 500,
+                        color: '#374151',
+                        fontSize: '14px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {conv.title || 'New Chat'}
+                    </Typography>
+                  </Box>
+                  {conversations.length > 1 && (
+                    <IconButton 
+                      size="small" 
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        deleteConversation(conv.id); 
+                      }} 
+                      sx={{ 
+                        color: '#9ca3af',
+                        p: 0.5,
+                        opacity: 0,
+                        '.MuiListItemButton-root:hover &': {
+                          opacity: 1
+                        },
+                        '&:hover': { 
+                          color: '#ef4444',
+                          bgcolor: '#fef2f2'
                         }
-                      },
-                      '&:hover': {
-                        bgcolor: '#f3f4f6'
-                      }
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 1.5 }}>
-                      <ChatBubbleOutlineIcon 
-                        fontSize="small" 
-                        sx={{ 
-                          color: conv.id === currentId ? '#374151' : '#6b7280',
-                          flexShrink: 0
-                        }} 
-                      />
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography 
-                          variant="body2" 
-                          sx={{ 
-                            fontWeight: 500,
-                            color: '#374151',
-                            fontSize: '14px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {conv.title || 'New Chat'}
-                        </Typography>
-                        <Typography 
-                          variant="caption" 
-                          sx={{ 
-                            color: '#9ca3af',
-                            fontSize: '12px'
-                          }}
-                        >
-                          {new Date(conv.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </Typography>
-                      </Box>
-                      {conversations.length > 1 && (
-                        <IconButton 
-                          size="small" 
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
-                            deleteConversation(conv.id); 
-                          }} 
-                          sx={{ 
-                            color: '#9ca3af',
-                            p: 0.5,
-                            '&:hover': { 
-                              color: '#ef4444',
-                              bgcolor: '#fef2f2'
-                            }
-                          }}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      )}
-                    </Box>
-                  </ListItemButton>
-                ))}
-              </List>
-            </Box>
-            <Box sx={{ 
-              p: 4, 
-              borderTop: '1px solid #e5e7eb',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1
-            }}>
-              <SettingsIcon sx={{ color: '#9ca3af', fontSize: 16 }} />
-              <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '12px' }}>
-                Settings
-              </Typography>
-            </Box>
-          </>
-        ) : (
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
-            <SourcesTab
-              onUploadSuccess={handleUploadSuccess}
-              onUploadError={handleUploadError}
-            />
+                      }}
+                    >
+                      <DeleteOutlineIcon fontSize="small" />
+                    </IconButton>
+                  )}
+                </Box>
+              </ListItemButton>
+            ))}
+          </List>
+        </Box>
+
+        {/* User Profile Section */}
+        <Box sx={{ 
+          p: 2, 
+          borderTop: '1px solid #e5e7eb',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          cursor: 'pointer',
+          '&:hover': {
+            bgcolor: '#f9fafb'
+          }
+        }}>
+          <Box sx={{
+            width: 32,
+            height: 32,
+            borderRadius: '50%',
+            bgcolor: '#2563eb',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <PersonIcon sx={{ color: '#ffffff', fontSize: 18 }} />
           </Box>
-        )}
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="body2" sx={{ color: '#374151', fontSize: '14px', fontWeight: 500 }}>
+              Miles Hollifield
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '12px' }}>
+              mfhollif@ncsu.edu
+            </Typography>
+          </Box>
+        </Box>
       </Box>
-      {/* Main Chat Area */}
+      {/* Main Content Area */}
       <Box component="main" sx={{ 
         flex: 1, 
         display: 'flex', 
         flexDirection: 'column', 
         bgcolor: '#ffffff'
       }}>
-        {/* Header */}
-        <Box sx={{ 
-          p: 3, 
-          borderBottom: '1px solid #e5e7eb',
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          bgcolor: '#ffffff'
-        }}>
-          <Typography 
-            variant="h6" 
-            sx={{ 
-              fontWeight: 600,
-              color: '#111827',
-              fontSize: '18px'
-            }}
-          >
-            {currentConversation.title === 'New Chat' ? 'GoodnightGPT' : currentConversation.title}
-          </Typography>
-          {loading && <CircularProgress size={20} sx={{ color: '#6b7280' }} />}
-        </Box>
-
-        {/* Messages Area */}
-        <Box sx={{ 
-          flex: 1, 
-          overflowY: 'auto', 
-          px: 4, 
-          py: 4,
-          bgcolor: '#ffffff'
-        }}>
-          <Stack spacing={4} maxWidth={768} mx="auto">
-            {messages.map((msg, msgIndex) => (
-              <Fade in key={`${currentId}-${msg.id}-${msgIndex}`} timeout={300}>
-                <Box 
-                  display="flex" 
-                  gap={3} 
-                  alignItems="flex-start" 
-                  flexDirection={msg.sender === 'user' ? 'row-reverse' : 'row'}
-                >
-                  <Avatar 
-                    sx={{ 
-                      bgcolor: msg.sender === 'user' ? '#1d4ed8' : '#f3f4f6',
-                      color: msg.sender === 'user' ? '#ffffff' : '#374151',
-                      width: 36, 
-                      height: 36, 
-                      fontSize: 14,
-                      fontWeight: 600
-                    }}
-                  >
-                    {msg.sender === 'user' ? 'You' : 'AI'}
-                  </Avatar>
-                  <Box sx={{ 
-                    flexShrink: 1, 
-                    maxWidth: '70%',
-                    minWidth: 0
-                  }}>
-                    <Paper 
-                      variant="outlined" 
-                      sx={{ 
-                        p: 3, 
-                        bgcolor: msg.sender === 'user' ? '#2563eb' : '#ffffff',
-                        border: msg.sender === 'user' ? '1px solid #2563eb' : '1px solid #e5e7eb',
-                        borderRadius: 2,
-                        boxShadow: 'none'
-                      }}
-                    >
-                      <Typography 
-                        variant="body1" 
-                        sx={{ 
-                          whiteSpace: 'pre-line',
-                          color: msg.sender === 'user' ? '#ffffff' : '#374151',
-                          fontSize: '15px',
-                          lineHeight: 1.6
-                        }}
-                      >
-                        {msg.text}
-                      </Typography>
-                      {msg.sender === 'ai' && msg.context && msg.context.length > 0 && (
-                        <Box mt={2}>
-                          <Typography 
-                            variant="caption" 
-                            sx={{ 
-                              color: '#6b7280',
-                              fontSize: '12px',
-                              fontWeight: 500,
-                              mb: 1,
-                              display: 'block'
-                            }}
-                          >
-                            Sources:
-                          </Typography>
-                          <Stack spacing={1}>
-                            {msg.context.slice(0,3).map((c, contextIndex) => (
-                              <Tooltip 
-                                key={`${currentId}-${msg.id}-context-${contextIndex}-${c.id}`} 
-                                title={`Score: ${c.score.toFixed(3)}\n${c.text}`} 
-                                placement="top" 
-                                arrow
-                              >
-                                <Paper 
-                                  variant="outlined" 
-                                  sx={{ 
-                                    p: 1.5, 
-                                    bgcolor: '#f9fafb',
-                                    borderColor: '#e5e7eb',
-                                    borderRadius: 1,
-                                    cursor: 'pointer',
-                                    '&:hover': {
-                                      bgcolor: '#f3f4f6'
-                                    }
-                                  }}
-                                >
-                                  <Typography 
-                                    variant="caption" 
-                                    sx={{ 
-                                      color: '#6b7280',
-                                      fontSize: '12px',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      whiteSpace: 'nowrap',
-                                      display: 'block'
-                                    }}
-                                  >
-                                    {c.text}
-                                  </Typography>
-                                </Paper>
-                              </Tooltip>
-                            ))}
-                          </Stack>
-                        </Box>
-                      )}
-                    </Paper>
-                  </Box>
-                </Box>
-              </Fade>
-            ))}
-            {loading && (
-              <Box display="flex" gap={3} alignItems="center">
-                <Avatar 
-                  sx={{ 
-                    bgcolor: '#f3f4f6',
-                    color: '#374151',
-                    width: 36, 
-                    height: 36, 
-                    fontSize: 14,
-                    fontWeight: 600
-                  }}
-                >
-                  AI
-                </Avatar>
-                <CircularProgress size={24} sx={{ color: '#6b7280' }} />
-              </Box>
-            )}
-            <div ref={chatEndRef} />
-          </Stack>
-        </Box>
-
-        {/* Input Area */}
-        <Box sx={{ 
-          p: 2, 
-          borderTop: '1px solid #e5e7eb',
-          bgcolor: '#ffffff'
-        }}>
-          <Box maxWidth={768} mx="auto">
-            <Paper 
-              component="form" 
-              onSubmit={e => { e.preventDefault(); handleSend(); }} 
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'flex-end', 
-                gap: 2, 
-                p: 1.5,
-                border: '1px solid #d1d5db',
-                borderRadius: 2,
-                bgcolor: '#ffffff',
-                boxShadow: 'none',
-                '&:focus-within': {
-                  borderColor: '#6b7280'
-                }
-              }}
-            >
-              <InputBase
+        {activeView === 'chat' ? (
+          <>
+            {/* Header */}
+            <Box sx={{ 
+              p: 3, 
+              borderBottom: '1px solid #e5e7eb',
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              bgcolor: '#ffffff'
+            }}>
+              <Typography 
+                variant="h6" 
                 sx={{ 
-                  flex: 1, 
-                  fontSize: '15px',
-                  color: '#374151',
-                  '& input::placeholder': {
-                    color: '#9ca3af'
-                  }
-                }}
-                placeholder="Type your message..."
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={handleInputKeyDown}
-                multiline
-                maxRows={4}
-              />
-              <IconButton 
-                onClick={handleSend} 
-                disabled={!input.trim() || loading}
-                sx={{ 
-                  bgcolor: input.trim() ? '#000000' : '#e5e7eb',
-                  color: input.trim() ? '#ffffff' : '#9ca3af',
-                  width: 32,
-                  height: 32,
-                  '&:hover': {
-                    bgcolor: input.trim() ? '#374151' : '#d1d5db'
-                  },
-                  '&:disabled': {
-                    bgcolor: '#e5e7eb',
-                    color: '#9ca3af'
-                  }
+                  fontWeight: 600,
+                  color: '#111827',
+                  fontSize: '18px'
                 }}
               >
-                <SendIcon fontSize="small" />
-              </IconButton>
-            </Paper>
-          </Box>
-        </Box>
+                GoodnightGPT
+              </Typography>
+              {loading && <CircularProgress size={20} sx={{ color: '#6b7280' }} />}
+            </Box>
+
+            {/* Messages Area */}
+            <Box sx={{ 
+              flex: 1, 
+              overflowY: 'auto', 
+              px: 4, 
+              py: 4,
+              bgcolor: '#ffffff'
+            }}>
+              <Stack spacing={4} maxWidth={768} mx="auto">
+                {messages.map((msg, msgIndex) => (
+                  <Fade in key={`${currentId}-${msg.id}-${msgIndex}`} timeout={300}>
+                    <Box 
+                      display="flex" 
+                      gap={3} 
+                      alignItems="flex-start" 
+                      flexDirection={msg.sender === 'user' ? 'row-reverse' : 'row'}
+                    >
+                      <Avatar 
+                        sx={{ 
+                          bgcolor: msg.sender === 'user' ? '#1d4ed8' : '#f3f4f6',
+                          color: msg.sender === 'user' ? '#ffffff' : '#374151',
+                          width: 36, 
+                          height: 36, 
+                          fontSize: 14,
+                          fontWeight: 600
+                        }}
+                      >
+                        {msg.sender === 'user' ? 'You' : 'AI'}
+                      </Avatar>
+                      <Box sx={{ 
+                        flexShrink: 1, 
+                        maxWidth: '70%',
+                        minWidth: 0
+                      }}>
+                        <Paper 
+                          variant="outlined" 
+                          sx={{ 
+                            p: 3, 
+                            bgcolor: msg.sender === 'user' ? '#2563eb' : '#ffffff',
+                            border: msg.sender === 'user' ? '1px solid #2563eb' : '1px solid #e5e7eb',
+                            borderRadius: 2,
+                            boxShadow: 'none'
+                          }}
+                        >
+                          <Typography 
+                            variant="body1" 
+                            sx={{ 
+                              whiteSpace: 'pre-line',
+                              color: msg.sender === 'user' ? '#ffffff' : '#374151',
+                              fontSize: '15px',
+                              lineHeight: 1.6
+                            }}
+                          >
+                            {msg.text}
+                          </Typography>
+                          {msg.sender === 'ai' && msg.context && msg.context.length > 0 && (
+                            <Box mt={2}>
+                              <Typography 
+                                variant="caption" 
+                                sx={{ 
+                                  color: '#6b7280',
+                                  fontSize: '12px',
+                                  fontWeight: 500,
+                                  mb: 1,
+                                  display: 'block'
+                                }}
+                              >
+                                Sources:
+                              </Typography>
+                              <Stack spacing={1}>
+                                {msg.context.slice(0,3).map((c, contextIndex) => (
+                                  <Tooltip 
+                                    key={`${currentId}-${msg.id}-context-${contextIndex}-${c.id}`} 
+                                    title={`Score: ${c.score.toFixed(3)}\n${c.text}`} 
+                                    placement="top" 
+                                    arrow
+                                  >
+                                    <Paper 
+                                      variant="outlined" 
+                                      sx={{ 
+                                        p: 1.5, 
+                                        bgcolor: '#f9fafb',
+                                        borderColor: '#e5e7eb',
+                                        borderRadius: 1,
+                                        cursor: 'pointer',
+                                        '&:hover': {
+                                          bgcolor: '#f3f4f6'
+                                        }
+                                      }}
+                                    >
+                                      <Typography 
+                                        variant="caption" 
+                                        sx={{ 
+                                          color: '#6b7280',
+                                          fontSize: '12px',
+                                          overflow: 'hidden',
+                                          textOverflow: 'ellipsis',
+                                          whiteSpace: 'nowrap',
+                                          display: 'block'
+                                        }}
+                                      >
+                                        {c.text}
+                                      </Typography>
+                                    </Paper>
+                                  </Tooltip>
+                                ))}
+                              </Stack>
+                            </Box>
+                          )}
+                        </Paper>
+                      </Box>
+                    </Box>
+                  </Fade>
+                ))}
+                {loading && (
+                  <Box display="flex" gap={3} alignItems="center">
+                    <Avatar 
+                      sx={{ 
+                        bgcolor: '#f3f4f6',
+                        color: '#374151',
+                        width: 36, 
+                        height: 36, 
+                        fontSize: 14,
+                        fontWeight: 600
+                      }}
+                    >
+                      AI
+                    </Avatar>
+                    <CircularProgress size={24} sx={{ color: '#6b7280' }} />
+                  </Box>
+                )}
+                <div ref={chatEndRef} />
+              </Stack>
+            </Box>
+
+            {/* Input Area */}
+            <Box sx={{ 
+              p: 2, 
+              borderTop: '1px solid #e5e7eb',
+              bgcolor: '#ffffff'
+            }}>
+              <Box maxWidth={768} mx="auto">
+                <Paper 
+                  component="form" 
+                  onSubmit={e => { e.preventDefault(); handleSend(); }} 
+                  sx={{ 
+                    display: 'flex', 
+                    alignItems: 'flex-end', 
+                    gap: 2, 
+                    p: 1.5,
+                    border: '1px solid #d1d5db',
+                    borderRadius: 2,
+                    bgcolor: '#ffffff',
+                    boxShadow: 'none',
+                    '&:focus-within': {
+                      borderColor: '#6b7280'
+                    }
+                  }}
+                >
+                  <InputBase
+                    sx={{ 
+                      flex: 1, 
+                      fontSize: '15px',
+                      color: '#374151',
+                      '& input::placeholder': {
+                        color: '#9ca3af'
+                      }
+                    }}
+                    placeholder="Type your message..."
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={handleInputKeyDown}
+                    multiline
+                    maxRows={4}
+                  />
+                  <IconButton 
+                    onClick={handleSend} 
+                    disabled={!input.trim() || loading}
+                    sx={{ 
+                      bgcolor: input.trim() ? '#000000' : '#e5e7eb',
+                      color: input.trim() ? '#ffffff' : '#9ca3af',
+                      width: 32,
+                      height: 32,
+                      '&:hover': {
+                        bgcolor: input.trim() ? '#374151' : '#d1d5db'
+                      },
+                      '&:disabled': {
+                        bgcolor: '#e5e7eb',
+                        color: '#9ca3af'
+                      }
+                    }}
+                  >
+                    <SendIcon fontSize="small" />
+                  </IconButton>
+                </Paper>
+              </Box>
+            </Box>
+          </>
+        ) : (
+          <>
+            {/* Sources Header */}
+            <Box sx={{ 
+              p: 3, 
+              borderBottom: '1px solid #e5e7eb',
+              bgcolor: '#ffffff'
+            }}>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  fontWeight: 600,
+                  color: '#111827',
+                  fontSize: '18px'
+                }}
+              >
+                Library
+              </Typography>
+            </Box>
+            
+            {/* Sources Content */}
+            <Box sx={{ 
+              flex: 1, 
+              p: 4,
+              bgcolor: '#ffffff',
+              overflowY: 'auto'
+            }}>
+              <Box maxWidth={768} mx="auto">
+                <SourcesTab
+                  onUploadSuccess={handleUploadSuccess}
+                  onUploadError={handleUploadError}
+                />
+              </Box>
+            </Box>
+          </>
+        )}
       </Box>
     </Box>
   );
