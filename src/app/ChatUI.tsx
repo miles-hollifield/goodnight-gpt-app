@@ -1,6 +1,6 @@
 "use client";
-import React, { useRef, useState, useEffect, useCallback } from "react";
-import { Box, Paper, Typography, IconButton, InputBase, CircularProgress, Avatar, Stack, Tooltip, List, ListItemButton, ListItemText, Divider, Button, Fade } from "@mui/material";
+import React, { useRef, useState, useEffect, useCallback, useMemo } from "react";
+import { Box, Paper, Typography, IconButton, InputBase, CircularProgress, Avatar, Stack, Tooltip, List, ListItemButton, Button, Fade } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -93,17 +93,17 @@ export default function ChatUI() {
         }
       }
     } catch { /* ignore */ }
-    return [createBlankConversation()];
+    return [];
   });
-  const [currentId, setCurrentId] = useState<string>(() => conversations[0].id);
+  const [currentId, setCurrentId] = useState<string>(() => conversations.length > 0 ? conversations[0].id : "");
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeView, setActiveView] = useState<'chat' | 'sources'>('chat');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const currentConversation = conversations.find(c => c.id === currentId)!;
-  const messages = currentConversation.messages;
+  const currentConversation = conversations.find(c => c.id === currentId);
+  const messages = useMemo(() => currentConversation?.messages || [], [currentConversation?.messages]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -132,21 +132,30 @@ export default function ChatUI() {
   const deleteConversation = (convId: string) => {
     setConversations(prev => {
       const filtered = prev.filter(c => c.id !== convId);
-      let updated;
       if (filtered.length === 0) {
-        const fresh = createBlankConversation();
-        updated = [fresh];
-        setCurrentId(fresh.id);
+        // If no conversations left, clear currentId and return empty array
+        setCurrentId("");
+        try { localStorage.setItem(LS_KEY, JSON.stringify([])); } catch { /* ignore */ }
+        return [];
       } else {
-        updated = filtered;
+        // If there are conversations left, update currentId if needed
         if (convId === currentId) setCurrentId(filtered[0].id);
+        try { localStorage.setItem(LS_KEY, JSON.stringify(filtered)); } catch { /* ignore */ }
+        return filtered;
       }
-      try { localStorage.setItem(LS_KEY, JSON.stringify(updated)); } catch { /* ignore */ }
-      return updated;
     });
   };
 
   const handleUploadSuccess = (response: UploadResponse) => {
+    // Create a new conversation if none exists
+    let targetConversationId = currentId;
+    if (conversations.length === 0) {
+      const fresh = createBlankConversation();
+      setConversations([fresh]);
+      setCurrentId(fresh.id);
+      targetConversationId = fresh.id;
+    }
+    
     // Create a system message to inform the user about the successful upload
     const systemMessage: Message = {
       id: chatUIMessageIdCounter++,
@@ -154,7 +163,7 @@ export default function ChatUI() {
       text: `✅ Document uploaded successfully!\n\n**${response.message}**\n\nProcessed ${response.chunks_indexed} chunks. Your document is now searchable in the knowledge base. You can ask questions about it!`
     };
     
-    updateConversation(currentId, conv => ({
+    updateConversation(targetConversationId, conv => ({
       ...conv,
       messages: [...conv.messages, systemMessage],
       updatedAt: Date.now()
@@ -162,6 +171,15 @@ export default function ChatUI() {
   };
 
   const handleUploadError = (error: Error) => {
+    // Create a new conversation if none exists
+    let targetConversationId = currentId;
+    if (conversations.length === 0) {
+      const fresh = createBlankConversation();
+      setConversations([fresh]);
+      setCurrentId(fresh.id);
+      targetConversationId = fresh.id;
+    }
+    
     // Create an error message to inform the user
     const errorMessage: Message = {
       id: chatUIMessageIdCounter++,
@@ -169,7 +187,7 @@ export default function ChatUI() {
       text: `❌ Upload failed: ${error.message}\n\nPlease try again or contact support if the issue persists.`
     };
     
-    updateConversation(currentId, conv => ({
+    updateConversation(targetConversationId, conv => ({
       ...conv,
       messages: [...conv.messages, errorMessage],
       updatedAt: Date.now()
@@ -178,12 +196,23 @@ export default function ChatUI() {
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
+    
+    let targetConversationId = currentId;
+    
+    // If no conversations exist, create a new one
+    if (conversations.length === 0) {
+      const fresh = createBlankConversation();
+      setConversations([fresh]);
+      setCurrentId(fresh.id);
+      targetConversationId = fresh.id;
+    }
+    
     const userMsg: Message = { id: chatUIMessageIdCounter++, sender: "user", text: input };
     console.log("Sending user message:", userMsg);
     setInput("");
     setLoading(true);
     // Add user message immediately
-    updateConversation(currentId, c => {
+    updateConversation(targetConversationId, c => {
       // Generate a more meaningful title from the user's message
       let newTitle = c.title;
       if (c.title === "New Chat") {
@@ -215,7 +244,7 @@ export default function ChatUI() {
         context: data.context
       };
       console.log("Adding AI message:", aiMsg);
-      updateConversation(currentId, c => {
+      updateConversation(targetConversationId, c => {
         const updated = {
           ...c,
           messages: [...c.messages, aiMsg],
@@ -227,7 +256,7 @@ export default function ChatUI() {
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : 'Unknown error';
       const errMsg: Message = { id: chatUIMessageIdCounter++, sender: "ai", text: `Error: ${message}` };
-      updateConversation(currentId, c => ({
+      updateConversation(targetConversationId, c => ({
         ...c,
         messages: [...c.messages, errMsg],
         updatedAt: Date.now()
@@ -262,7 +291,7 @@ export default function ChatUI() {
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'space-between',
-            p: 2,
+            p: 2.8,
             borderBottom: '1px solid #e5e7eb'
           }}>
             {/* Logo/Icon Area */}
@@ -350,7 +379,20 @@ export default function ChatUI() {
             Recent
           </Typography>
           <List dense disablePadding>
-            {conversations.map(conv => (
+            {conversations.length === 0 ? (
+              <Box sx={{ 
+                p: 3, 
+                textAlign: 'center',
+                color: '#6b7280'
+              }}>
+                <Typography variant="body2" sx={{ fontSize: '13px' }}>
+                  No conversations yet.
+                  <br />
+                  Start by asking a question below!
+                </Typography>
+              </Box>
+            ) : (
+              conversations.map(conv => (
               <ListItemButton 
                 key={conv.id} 
                 selected={conv.id === currentId} 
@@ -394,38 +436,37 @@ export default function ChatUI() {
                       {conv.title || 'New Chat'}
                     </Typography>
                   </Box>
-                  {conversations.length > 1 && (
-                    <IconButton 
-                      size="small" 
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
-                        deleteConversation(conv.id); 
-                      }} 
-                      sx={{ 
-                        color: '#9ca3af',
-                        p: 0.5,
-                        opacity: 0,
-                        '.MuiListItemButton-root:hover &': {
-                          opacity: 1
-                        },
-                        '&:hover': { 
-                          color: '#ef4444',
-                          bgcolor: '#fef2f2'
-                        }
-                      }}
-                    >
-                      <DeleteOutlineIcon fontSize="small" />
-                    </IconButton>
-                  )}
+                  <IconButton 
+                    size="small" 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      deleteConversation(conv.id); 
+                    }} 
+                    sx={{ 
+                      color: '#9ca3af',
+                      p: 0.5,
+                      opacity: 0,
+                      '.MuiListItemButton-root:hover &': {
+                        opacity: 1
+                      },
+                      '&:hover': { 
+                        color: '#ef4444',
+                        bgcolor: '#fef2f2'
+                      }
+                    }}
+                  >
+                    <DeleteOutlineIcon fontSize="small" />
+                  </IconButton>
                 </Box>
               </ListItemButton>
-            ))}
+            ))
+            )}
           </List>
         </Box>
 
         {/* User Profile Section */}
         <Box sx={{ 
-          p: 2, 
+          p: 2.8, 
           borderTop: '1px solid #e5e7eb',
           display: 'flex',
           alignItems: 'center',
@@ -514,7 +555,39 @@ export default function ChatUI() {
               bgcolor: '#ffffff'
             }}>
               <Stack spacing={4} maxWidth={768} mx="auto">
-                {messages.map((msg, msgIndex) => (
+                {conversations.length === 0 ? (
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    height: '100%',
+                    textAlign: 'center',
+                    py: 8
+                  }}>
+                    <Typography 
+                      variant="h4" 
+                      sx={{ 
+                        fontWeight: 600,
+                        color: '#111827',
+                        mb: 2
+                      }}
+                    >
+                      Welcome to GoodnightGPT
+                    </Typography>
+                    <Typography 
+                      variant="body1" 
+                      sx={{ 
+                        color: '#6b7280',
+                        mb: 4,
+                        maxWidth: 400
+                      }}
+                    >
+                      Ask me anything about the Goodnight program, or upload documents to add them to the knowledge base.
+                    </Typography>
+                  </Box>
+                ) : (
+                  messages.map((msg, msgIndex) => (
                   <Fade in key={`${currentId}-${msg.id}-${msgIndex}`} timeout={300}>
                     <Box 
                       display="flex" 
@@ -618,7 +691,8 @@ export default function ChatUI() {
                       </Box>
                     </Box>
                   </Fade>
-                ))}
+                ))
+                )}
                 {loading && (
                   <Box display="flex" gap={3} alignItems="center">
                     <Avatar 

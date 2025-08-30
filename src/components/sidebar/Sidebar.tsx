@@ -76,7 +76,7 @@ export function Sidebar({
                 isActive={conversation.id === currentId}
                 onClick={() => onSelectConversation(conversation.id)}
                 onDelete={() => onDeleteConversation(conversation.id)}
-                showDelete={conversations.length > 1}
+                showDelete={true}
               />
             ))}
           </nav>
