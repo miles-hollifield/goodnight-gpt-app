@@ -291,8 +291,10 @@ export default function ChatUI() {
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'space-between',
-            p: 2.8,
-            borderBottom: '1px solid #e5e7eb'
+            px: 2,
+            py: 1,
+            height: 56,
+            // borderBottom: '1px solid #e5e7eb'
           }}>
             {/* Logo/Icon Area */}
             <Box sx={{
@@ -510,27 +512,32 @@ export default function ChatUI() {
           <>
             {/* Header */}
             <Box sx={{ 
-              p: 3, 
+              px: 2,
+              py: 1, 
               borderBottom: '1px solid #e5e7eb',
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center',
-              bgcolor: '#ffffff'
+              bgcolor: '#ffffff',
+              height: 56
             }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, height: '100%' }}>
                 {!sidebarOpen && (
-                  <IconButton 
-                    onClick={() => setSidebarOpen(true)}
-                    sx={{ 
-                      color: '#6b7280',
-                      '&:hover': { 
-                        color: '#374151',
-                        bgcolor: '#f3f4f6'
-                      }
-                    }}
-                  >
-                    <MenuIcon />
-                  </IconButton>
+                  <Box sx={{ width: 40, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <IconButton 
+                      size="small"
+                      onClick={() => setSidebarOpen(true)}
+                      sx={{ 
+                        color: '#6b7280',
+                        '&:hover': { 
+                          color: '#374151',
+                          bgcolor: '#f3f4f6'
+                        }
+                      }}
+                    >
+                      <MenuIcon />
+                    </IconButton>
+                  </Box>
                 )}
                 <Typography 
                   variant="h6" 
@@ -609,7 +616,7 @@ export default function ChatUI() {
                       </Avatar>
                       <Box sx={{ 
                         flexShrink: 1, 
-                        maxWidth: '70%',
+                        maxWidth: '100%',
                         minWidth: 0
                       }}>
                         <Paper 
