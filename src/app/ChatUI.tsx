@@ -304,7 +304,7 @@ export default function ChatUI() {
                 width: 32,
                 height: 32,
                 borderRadius: 2,
-                bgcolor: '#2563eb',
+                bgcolor: '#CC0000',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -312,7 +312,7 @@ export default function ChatUI() {
                 cursor: 'pointer',
                 transition: 'all 0.2s',
                 '&:hover': {
-                  bgcolor: '#1d4ed8',
+                  bgcolor: '#CC0000',
                   transform: 'scale(1.05)'
                 },
                 '&:active': {
@@ -497,7 +497,7 @@ export default function ChatUI() {
             width: 32,
             height: 32,
             borderRadius: '50%',
-            bgcolor: '#2563eb',
+            bgcolor: '#CC0000',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -619,7 +619,7 @@ export default function ChatUI() {
                     >
                       <Avatar 
                         sx={{ 
-                          bgcolor: msg.sender === 'user' ? '#1d4ed8' : '#f3f4f6',
+                          bgcolor: msg.sender === 'user' ? '#CC0000' : '#f3f4f6',
                           color: msg.sender === 'user' ? '#ffffff' : '#374151',
                           width: 36, 
                           height: 36, 
@@ -638,8 +638,8 @@ export default function ChatUI() {
                           variant="outlined" 
                           sx={{ 
                             p: 3, 
-                            bgcolor: msg.sender === 'user' ? '#2563eb' : '#ffffff',
-                            border: msg.sender === 'user' ? '1px solid #2563eb' : '1px solid #e5e7eb',
+                            bgcolor: msg.sender === 'user' ? '#CC0000' : '#ffffff',
+                            border: msg.sender === 'user' ? '1px solid #CC0000' : '1px solid #e5e7eb',
                             borderRadius: 2,
                             boxShadow: 'none'
                           }}

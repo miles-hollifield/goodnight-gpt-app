@@ -171,7 +171,7 @@ export function DocumentUpload({ onUploadSuccess, onUploadError, className = '' 
         }
 
         .upload-area.drag-active {
-          border-color: #2563eb;
+          border-color: #CC0000;
           background: #eff6ff;
           transform: scale(1.02);
         }
@@ -253,7 +253,7 @@ export function DocumentUpload({ onUploadSuccess, onUploadError, className = '' 
 
         .upload-status.info {
           background: #eff6ff;
-          color: #1d4ed8;
+          color: #CC0000;
           border: 1px solid #bfdbfe;
         }
       `}</style>

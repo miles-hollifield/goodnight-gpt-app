@@ -29,14 +29,14 @@ export function ChatMessage({ message }: ChatMessageProps) {
         gap: 2.5,
         maxWidth: '85%',
         flexDirection: isUser ? 'row-reverse' : 'row',
-        bgcolor: isUser ? '#2563eb' : 'transparent',
+  bgcolor: isUser ? '#CC0000' : 'transparent',
         borderRadius: isUser ? 3 : 0,
         p: isUser ? 2.5 : 0,
         border: isUser ? 'none' : '1px solid #f3f4f6',
         borderLeft: isUser ? 'none' : '4px solid #e5e7eb'
       }}>
         <Avatar sx={{ 
-          bgcolor: isUser ? '#1d4ed8' : '#6b7280',
+          bgcolor: isUser ? '#CC0000' : '#6b7280',
           width: 36,
           height: 36,
           fontSize: '1rem'

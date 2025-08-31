@@ -7,13 +7,13 @@
   --sidebar-bg: #ffffff;
   --sidebar-hover: #f9fafb;
   --border-color: #e5e7eb;
-  --message-user-bg: #2563eb;
+  --message-user-bg: #CC0000;
   --message-ai-bg: #ffffff;
   --input-bg: #ffffff;
   --hover-bg: #f9fafb;
   --text-primary: #111827;
   --text-secondary: #6b7280;
-  --accent: #2563eb;
+  --accent: #CC0000;
   --header-bg: #ffffff;
   --header-text: #111827;
   --shadow-light: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
@@ -28,7 +28,7 @@
     --sidebar-bg: #1f2937;
     --sidebar-hover: #374151;
     --border-color: #374151;
-    --message-user-bg: #2563eb;
+  --message-user-bg: #CC0000;
     --message-ai-bg: #1f2937;
     --input-bg: #1f2937;
     --hover-bg: #374151;

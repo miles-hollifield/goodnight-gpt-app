@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { DocumentUpload } from '@/components';
-import { UploadResponse, deleteDocument } from '@/services/api';
+import { UploadResponse, deleteDocument, listDocuments, DocumentInfo } from '@/services/api';
 
 interface UploadedDocument {
   id: string;
@@ -21,6 +21,25 @@ interface SourcesTabProps {
 
 export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) {
   const [uploadedDocs, setUploadedDocs] = useState<UploadedDocument[]>([]);
+  const [pineconeDocuments, setPineconeDocuments] = useState<DocumentInfo[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Load documents from Pinecone on component mount
+  useEffect(() => {
+    loadPineconeDocuments();
+  }, []);
+
+  const loadPineconeDocuments = async () => {
+    setLoading(true);
+    try {
+      const response = await listDocuments();
+      setPineconeDocuments(response.documents);
+    } catch (error) {
+      console.error('Error loading documents from Pinecone:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Load uploaded documents from localStorage on component mount
   useEffect(() => {
@@ -67,29 +86,25 @@ export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) 
     setUploadedDocs(updatedDocs);
     saveDocsToStorage(updatedDocs);
     
+    // Refresh Pinecone documents list
+    loadPineconeDocuments();
+    
     onUploadSuccess?.(response);
   };
 
-  const handleDeleteDocument = async (docId: string) => {
-    const docToDelete = uploadedDocs.find(doc => doc.id === docId);
-    if (!docToDelete) return;
-
+  const handleDeleteDocument = async (documentId: string) => {
     try {
       // Call backend to delete from Pinecone
-      await deleteDocument(docToDelete.documentId);
+      await deleteDocument(documentId);
       
-      // Remove from local state
-      const updatedDocs = uploadedDocs.filter(doc => doc.id !== docId);
-      setUploadedDocs(updatedDocs);
-      saveDocsToStorage(updatedDocs);
+      // Refresh the Pinecone documents list
+      await loadPineconeDocuments();
       
-      // You could add a success notification here
-      console.log(`Successfully deleted ${docToDelete.filename} from knowledge base`);
+      console.log(`Successfully deleted document ${documentId} from knowledge base`);
       
     } catch (error) {
       console.error('Error deleting document:', error);
-      // You could add an error notification here
-      alert(`Failed to delete ${docToDelete.filename}. Please try again.`);
+      alert(`Failed to delete document. Please try again.`);
     }
   };
 
@@ -128,12 +143,12 @@ export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) 
       <div className="sources-list">
         <div className="section-header">
           <h3 className="section-title">Knowledge Base</h3>
-          {uploadedDocs.length > 0 && (
-            <span className="docs-count">{uploadedDocs.length} document{uploadedDocs.length !== 1 ? 's' : ''}</span>
+          {pineconeDocuments.length > 0 && (
+            <span className="docs-count">{pineconeDocuments.length} document{pineconeDocuments.length !== 1 ? 's' : ''}</span>
           )}
         </div>
 
-        {uploadedDocs.length === 0 && (
+        {pineconeDocuments.length === 0 && !loading && (
           <div className="empty-state">
             <div className="empty-icon">📚</div>
             <p>No documents uploaded yet</p>
@@ -141,25 +156,31 @@ export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) 
           </div>
         )}
 
-        {uploadedDocs.length > 0 && (
+        {loading && (
+          <div className="loading-state">
+            <p>Loading documents from knowledge base...</p>
+          </div>
+        )}
+
+        {pineconeDocuments.length > 0 && (
           <div className="documents-list">
-            {uploadedDocs.map((doc) => (
-              <div key={doc.id} className="document-item">
+            {pineconeDocuments.map((doc) => (
+              <div key={doc.document_id} className="document-item">
                 <div className="doc-header">
-                  <div className="doc-icon">{getFileTypeIcon(doc.fileType)}</div>
+                  <div className="doc-icon">{getFileTypeIcon(doc.type)}</div>
                   <div className="doc-info">
-                    <div className="doc-name" title={doc.filename}>{doc.filename}</div>
+                    <div className="doc-name" title={doc.source}>{doc.source}</div>
                     <div className="doc-meta">
-                      <span className="file-type">{doc.fileType.toUpperCase()}</span>
-                      <span className="chunk-count">{doc.chunksIndexed} chunks</span>
-                      <span className="upload-date">{formatDate(doc.uploadedAt)}</span>
+                      <span className="file-type">{doc.type.toUpperCase()}</span>
+                      <span className="chunk-count">{doc.chunk_count} chunks</span>
+                      <span className="total-chunks">({doc.total_chunks} total)</span>
                     </div>
                   </div>
                 </div>
                 <button
                   className="delete-btn"
-                  onClick={() => handleDeleteDocument(doc.id)}
-                  aria-label={`Delete ${doc.filename}`}
+                  onClick={() => handleDeleteDocument(doc.document_id)}
+                  aria-label={`Delete ${doc.source}`}
                   title="Remove from knowledge base"
                 >
                   🗑️
@@ -301,11 +322,25 @@ export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) 
         }
 
         .chunk-count {
-          color: #2563eb;
+          color: #CC0000;
         }
 
         .upload-date {
           color: #6b7280;
+        }
+
+        .total-chunks {
+          color: #6b7280;
+          font-style: italic;
+        }
+
+        .loading-state {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 2rem;
+          color: #6b7280;
+          font-style: italic;
         }
 
         .delete-btn {

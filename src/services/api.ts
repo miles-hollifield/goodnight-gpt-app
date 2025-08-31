@@ -226,3 +226,62 @@ export async function deleteDocument(documentId: string): Promise<DeleteResponse
     }
   }, { maxRetries: 1 }); // Only retry once for deletions
 }
+
+export interface DocumentInfo {
+  document_id: string;
+  source: string;
+  type: string;
+  total_chunks: number;
+  chunk_count: number;
+}
+
+export interface ListDocumentsResponse {
+  documents: DocumentInfo[];
+}
+
+export async function listDocuments(): Promise<ListDocumentsResponse> {
+  return withRetry(async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+    
+    try {
+      const res = await fetch(`${API_BASE}/list-documents`, {
+        method: "GET",
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new ChatError(
+          ErrorType.SERVER_ERROR,
+          `List documents failed: ${res.status}`,
+          errorData.detail || 'Failed to list documents',
+          undefined,
+          true
+        );
+      }
+      
+      return await res.json();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      
+      if (error instanceof ChatError) {
+        throw error;
+      }
+      
+      if (error instanceof Error) {
+        throw ChatError.fromNetworkError(error);
+      }
+      
+      throw new ChatError(
+        ErrorType.UNKNOWN,
+        'Unknown list documents error',
+        'An unexpected error occurred while listing documents. Please try again.',
+        undefined,
+        true
+      );
+    }
+  });
+}
