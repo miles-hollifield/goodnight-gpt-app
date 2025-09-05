@@ -36,7 +36,9 @@ export function Sidebar({
   };
 
   return (
-    <aside className={`${isCollapsed ? 'w-16' : 'w-64'} transition-all duration-200 bg-[var(--sidebar-bg)] border-r border-[var(--border-color)] flex flex-col`}>
+    <aside
+      className={`${isCollapsed ? 'w-16' : 'w-64'} overflow-hidden transition-all duration-300 ease-in-out bg-[var(--sidebar-bg)] border-r border-[var(--border-color)] flex flex-col`}
+    >
       {/* Toggle button for mobile/desktop */}
       <div className="p-2 border-b border-[var(--border-color)]">
         <button
@@ -50,7 +52,7 @@ export function Sidebar({
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={`transition-transform ${isCollapsed ? 'rotate-180' : ''}`}
+            className={`transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}
           >
             <path
               d="M9 18L15 12L9 6"
@@ -63,43 +65,48 @@ export function Sidebar({
         </button>
       </div>
 
-      {!isCollapsed && (
-        <>
-          <div className="p-2">
-            <NewChatButton onClick={onNewChat} />
-          </div>
-          <nav className="flex-1 overflow-y-auto p-2 space-y-1">
-            {conversations.map((conversation) => (
-              <ConversationItem
-                key={conversation.id}
-                conversation={conversation}
-                isActive={conversation.id === currentId}
-                onClick={() => onSelectConversation(conversation.id)}
-                onDelete={() => onDeleteConversation(conversation.id)}
-                showDelete={true}
-              />
-            ))}
-          </nav>
-          
-          {/* Document Upload Section */}
-          <div className="p-2 border-t border-[var(--border-color)]">
-            <DocumentUpload
-              onUploadSuccess={handleUploadSuccess}
-              onUploadError={handleUploadError}
-              className="mb-2"
+      {/* Keep content mounted so width/text can animate smoothly */}
+      <div className="flex-1 flex flex-col">
+        <div className="p-2">
+          <NewChatButton onClick={onNewChat} collapsed={isCollapsed} />
+        </div>
+
+        <nav className="flex-1 overflow-y-auto p-2 space-y-1">
+          {conversations.map((conversation) => (
+            <ConversationItem
+              key={conversation.id}
+              conversation={conversation}
+              isActive={conversation.id === currentId}
+              onClick={() => onSelectConversation(conversation.id)}
+              onDelete={() => onDeleteConversation(conversation.id)}
+              showDelete={true}
+              collapsed={isCollapsed}
             />
-          </div>
-          
-          <div className="p-4 border-t border-[var(--border-color)]">
-            <p className="text-xs text-[var(--text-secondary)]">
-              GoodnightGPT • Beta
-            </p>
-            <p className="text-xs text-[var(--text-secondary)] mt-1">
-              Ctrl+Shift+O for new chat
-            </p>
-          </div>
-        </>
-      )}
+          ))}
+        </nav>
+
+        {/* Document Upload Section */}
+        <div
+          className={`p-2 border-t border-[var(--border-color)] transition-all duration-300 ${
+            isCollapsed ? 'opacity-0 pointer-events-none select-none' : 'opacity-100'
+          }`}
+        >
+          <DocumentUpload
+            onUploadSuccess={handleUploadSuccess}
+            onUploadError={handleUploadError}
+            className="mb-2"
+          />
+        </div>
+
+        <div
+          className={`p-4 border-t border-[var(--border-color)] transition-opacity duration-300 ${
+            isCollapsed ? 'opacity-0 pointer-events-none select-none' : 'opacity-100'
+          }`}
+        >
+          <p className="text-xs text-[var(--text-secondary)]">GoodnightGPT • Beta</p>
+          <p className="text-xs text-[var(--text-secondary)] mt-1">Ctrl+Shift+O for new chat</p>
+        </div>
+      </div>
     </aside>
   );
 }

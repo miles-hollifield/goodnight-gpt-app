@@ -12,6 +12,8 @@ interface UploadedDocument {
   uploadedAt: Date;
   size?: number;
   documentId: string; // ID used in Pinecone for deletion
+  columns?: string[]; // For CSV files
+  pages?: number; // For PDFs
 }
 
 interface SourcesTabProps {
@@ -79,7 +81,9 @@ export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) 
       fileType: response.file_type,
       chunksIndexed: response.chunks_indexed,
       uploadedAt: new Date(),
-      documentId: response.document_id // Use the document_id returned by the backend
+  documentId: response.document_id, // Use the document_id returned by the backend
+  columns: response.columns,
+  pages: response.pages
     };
 
     const updatedDocs = [newDoc, ...uploadedDocs];
@@ -157,29 +161,44 @@ export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) 
 
         {pineconeDocuments.length > 0 && (
           <div className="documents-list">
-            {pineconeDocuments.map((doc) => (
-              <div key={doc.document_id} className="document-item">
-                <div className="doc-header">
-                  <div className="doc-icon">{getFileTypeIcon(doc.type)}</div>
-                  <div className="doc-info">
-                    <div className="doc-name" title={doc.source}>{doc.source}</div>
-                    <div className="doc-meta">
-                      <span className="file-type">{doc.type.toUpperCase()}</span>
-                      <span className="chunk-count">{doc.chunk_count} chunks</span>
-                      <span className="total-chunks">({doc.total_chunks} total)</span>
+            {pineconeDocuments.map((doc) => {
+              const local = uploadedDocs.find(u => u.documentId === doc.document_id);
+              const preferredType = (local?.fileType || doc.type || '').toLowerCase();
+              const displayName = local?.filename || doc.source;
+              const displayTypeLabel = (preferredType || 'unknown').toUpperCase();
+              const columnsCount = local?.columns?.length ?? undefined;
+              const pages = doc.pages ?? local?.pages;
+
+              return (
+                <div key={doc.document_id} className="document-item">
+                  <div className="doc-header">
+                    <div className="doc-icon">{getFileTypeIcon(preferredType)}</div>
+                    <div className="doc-info">
+                      <div className="doc-name" title={displayName}>{displayName}</div>
+                      <div className="doc-meta">
+                        <span className="file-type">{displayTypeLabel}</span>
+                        {preferredType === 'csv' && (typeof (doc.columns_count ?? columnsCount) === 'number') && (
+                          <span className="columns-count">{(doc.columns_count ?? columnsCount)} column{(doc.columns_count ?? columnsCount) !== 1 ? 's' : ''}</span>
+                        )}
+                        {preferredType === 'pdf' && typeof pages === 'number' && (
+                          <span className="columns-count">{pages} page{pages !== 1 ? 's' : ''}</span>
+                        )}
+                        <span className="chunk-count">{doc.chunk_count} chunks</span>
+                        <span className="total-chunks">({doc.total_chunks} total)</span>
+                      </div>
                     </div>
                   </div>
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDeleteDocument(doc.document_id)}
+                    aria-label={`Delete ${displayName}`}
+                    title="Remove from knowledge base"
+                  >
+                    🗑️
+                  </button>
                 </div>
-                <button
-                  className="delete-btn"
-                  onClick={() => handleDeleteDocument(doc.document_id)}
-                  aria-label={`Delete ${doc.source}`}
-                  title="Remove from knowledge base"
-                >
-                  🗑️
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -304,6 +323,10 @@ export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) 
           gap: 0.75rem;
           font-size: 12px;
           color: #6b7280;
+        }
+
+        .columns-count {
+          color: #374151;
         }
 
         .file-type {

@@ -2,13 +2,16 @@
 
 interface NewChatButtonProps {
   onClick: () => void;
+  collapsed?: boolean;
 }
 
-export function NewChatButton({ onClick }: NewChatButtonProps) {
+export function NewChatButton({ onClick, collapsed = false }: NewChatButtonProps) {
   return (
     <button
       onClick={onClick}
       className="flex items-center gap-3 w-full px-3 py-3 text-sm rounded-lg border border-[var(--border-color)] hover:bg-[var(--hover-bg)] transition-colors"
+      aria-label="New chat"
+      title={collapsed ? 'New chat' : undefined}
     >
       <svg
         width="16"
@@ -25,7 +28,13 @@ export function NewChatButton({ onClick }: NewChatButtonProps) {
           fill="currentColor"
         />
       </svg>
-      New chat
+      <span
+        className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-in-out ${
+          collapsed ? 'opacity-0 -translate-x-1 w-0 max-w-0' : 'opacity-100 translate-x-0 w-auto max-w-[10rem]'
+        }`}
+      >
+        New chat
+      </span>
     </button>
   );
 }

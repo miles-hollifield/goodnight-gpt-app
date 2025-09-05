@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef, useState, useEffect, useCallback, useMemo } from "react";
-import { Box, Paper, Typography, IconButton, InputBase, CircularProgress, Avatar, Stack, Tooltip, List, ListItemButton, Button, Fade } from "@mui/material";
+import { Box, Paper, Typography, IconButton, InputBase, CircularProgress, Avatar, Stack, Tooltip, List, ListItemButton, Button, Fade, Collapse } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";
@@ -439,9 +439,9 @@ export default function ChatUI() {
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', width: '100%', bgcolor: 'background.default', overflow: 'hidden' }}>
-      {/* Sidebar */}
-      {sidebarOpen && (
+  <Box sx={{ display: 'flex', height: '100vh', width: '100%', bgcolor: 'background.default', overflow: 'hidden', alignItems: 'stretch' }}>
+      {/* Sidebar (animated) */}
+      <Collapse in={sidebarOpen} orientation="horizontal" collapsedSize={0} timeout={300} sx={{ height: '100%', display: 'flex' }}>
         <Box component="aside" sx={{ 
           width: 260, 
           bgcolor: 'background.paper', 
@@ -450,7 +450,9 @@ export default function ChatUI() {
           flexDirection: 'column', 
           borderRight: 1,
           borderColor: 'divider',
-          position: 'relative'
+          position: 'relative',
+          height: '100%',
+          transition: 'width 0.3s ease'
         }}>
           {/* Sidebar Header */}
           <Box sx={{ 
@@ -655,8 +657,8 @@ export default function ChatUI() {
             </Typography>
           </Box>
         </Box>
-      </Box>
-      )}
+        </Box>
+      </Collapse>
 
       {/* Main Content Area */}
       <Box component="main" sx={{ 

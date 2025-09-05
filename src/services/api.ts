@@ -235,6 +235,8 @@ export interface DocumentInfo {
   type: string;
   total_chunks: number;
   chunk_count: number;
+  columns_count?: number;
+  pages?: number;
 }
 
 export interface ListDocumentsResponse {

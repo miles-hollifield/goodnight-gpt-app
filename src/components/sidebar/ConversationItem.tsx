@@ -9,6 +9,7 @@ interface ConversationItemProps {
   onClick: () => void;
   onDelete: () => void;
   showDelete: boolean;
+  collapsed?: boolean;
 }
 
 export function ConversationItem({
@@ -17,6 +18,7 @@ export function ConversationItem({
   onClick,
   onDelete,
   showDelete,
+  collapsed = false,
 }: ConversationItemProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -47,10 +49,14 @@ export function ConversationItem({
           strokeLinejoin="round"
         />
       </svg>
-      <span className="flex-1 truncate pr-8">
+      <span
+        className={`flex-1 truncate pr-8 transition-all duration-300 ease-in-out ${
+          collapsed ? 'opacity-0 -translate-x-1 w-0 max-w-0 pr-0' : 'opacity-100 translate-x-0 w-auto max-w-full pr-8'
+        }`}
+      >
         {conversation.title || "Untitled"}
       </span>
-      {showDelete && (isHovered || isActive) && (
+      {showDelete && (isHovered || isActive) && !collapsed && (
         <button
           onClick={(e) => {
             e.stopPropagation();
