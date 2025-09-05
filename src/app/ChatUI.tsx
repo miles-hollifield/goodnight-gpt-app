@@ -533,7 +533,7 @@ export default function ChatUI() {
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center',
-              bgcolor: '#ffffff',
+              bgcolor: '#CC0000',
               height: 56
             }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, height: '100%' }}>
@@ -543,10 +543,9 @@ export default function ChatUI() {
                       size="small"
                       onClick={() => setSidebarOpen(true)}
                       sx={{ 
-                        color: '#6b7280',
+                        color: '#ffffff',
                         '&:hover': { 
-                          color: '#374151',
-                          bgcolor: '#f3f4f6'
+                          color: '#ffffff'
                         }
                       }}
                     >
@@ -558,7 +557,7 @@ export default function ChatUI() {
                   variant="h6" 
                   sx={{ 
                     fontWeight: 600,
-                    color: '#111827',
+                    color: '#ffffff',
                     fontSize: '18px'
                   }}
                 >
