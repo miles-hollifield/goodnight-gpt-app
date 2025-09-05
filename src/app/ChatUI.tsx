@@ -1,6 +1,7 @@
 "use client";
 import React, { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { Box, Paper, Typography, IconButton, InputBase, CircularProgress, Avatar, Stack, Tooltip, List, ListItemButton, Button, Fade } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import SendIcon from "@mui/icons-material/Send";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -274,16 +275,17 @@ export default function ChatUI() {
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', width: '100%', bgcolor: '#ffffff', overflow: 'hidden' }}>
+    <Box sx={{ display: 'flex', height: '100vh', width: '100%', bgcolor: 'background.default', overflow: 'hidden' }}>
       {/* Sidebar */}
       {sidebarOpen && (
         <Box component="aside" sx={{ 
           width: 260, 
-          bgcolor: '#f7f7f8', 
-          color: '#374151', 
+          bgcolor: 'background.paper', 
+          color: 'text.primary', 
           display: 'flex', 
           flexDirection: 'column', 
-          borderRight: '1px solid #e5e7eb',
+          borderRight: 1,
+          borderColor: 'divider',
           position: 'relative'
         }}>
           {/* Sidebar Header */}
@@ -304,7 +306,7 @@ export default function ChatUI() {
                 width: 32,
                 height: 32,
                 borderRadius: 2,
-                bgcolor: '#CC0000',
+                bgcolor: 'var(--brand-red)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -312,7 +314,7 @@ export default function ChatUI() {
                 cursor: 'pointer',
                 transition: 'all 0.2s',
                 '&:hover': {
-                  bgcolor: '#CC0000',
+                  bgcolor: 'var(--brand-red)',
                   transform: 'scale(1.05)'
                 },
                 '&:active': {
@@ -321,7 +323,7 @@ export default function ChatUI() {
               }}
               aria-label="Go to main page"
             >
-              <Typography sx={{ color: '#ffffff', fontWeight: 'bold', fontSize: '16px' }}>
+              <Typography sx={{ color: 'var(--brand-white)', fontWeight: 'bold', fontSize: '16px' }}>
                 GN
               </Typography>
             </Box>
@@ -330,13 +332,7 @@ export default function ChatUI() {
             <IconButton 
               onClick={() => setSidebarOpen(false)}
               size="small"
-              sx={{ 
-                color: '#6b7280',
-                '&:hover': { 
-                  color: '#374151',
-                  bgcolor: '#f3f4f6'
-                }
-              }}
+              sx={{ color: 'text.secondary', '&:hover': { color: 'text.primary', bgcolor: 'grey.100' } }}
             >
               <KeyboardDoubleArrowLeftIcon fontSize="small" />
             </IconButton>
@@ -348,18 +344,7 @@ export default function ChatUI() {
             startIcon={<AddIcon />} 
             fullWidth 
             variant="outlined" 
-            sx={{ 
-              color: '#374151',
-              borderColor: '#d1d5db',
-              textTransform: 'none',
-              fontWeight: 500,
-              py: 1.5,
-              borderRadius: 2,
-              '&:hover': { 
-                borderColor: '#9ca3af',
-                bgcolor: '#f9fafb'
-              }
-            }}
+            sx={{ color: 'text.primary', borderColor: 'divider', textTransform: 'none', fontWeight: 500, py: 1.5, borderRadius: 2, '&:hover': { borderColor: 'grey.400', bgcolor: 'grey.50' } }}
           >
             New Chat
           </Button>
@@ -367,23 +352,20 @@ export default function ChatUI() {
 
         {/* Navigation Links */}
         <Box sx={{ px: 2, pb: 2 }}>
-          <Button
+      <Button
             onClick={() => setActiveView('sources')}
             startIcon={<FolderIcon />}
             fullWidth
             sx={{
-              color: activeView === 'sources' ? '#374151' : '#6b7280',
-              bgcolor: activeView === 'sources' ? '#e5e7eb' : 'transparent',
+        color: activeView === 'sources' ? 'text.primary' : 'text.secondary',
+        bgcolor: activeView === 'sources' ? 'grey.200' : 'transparent',
               textTransform: 'none',
               fontWeight: 500,
               py: 1.5,
               px: 2,
               borderRadius: 2,
               justifyContent: 'flex-start',
-              '&:hover': { 
-                bgcolor: '#f3f4f6',
-                color: '#374151'
-              }
+        '&:hover': { bgcolor: 'grey.100', color: 'text.primary' }
             }}
           >
             Library
@@ -392,7 +374,7 @@ export default function ChatUI() {
 
         {/* Chat History */}
         <Box sx={{ flex: 1, overflowY: 'auto', px: 2 }}>
-          <Typography variant="caption" sx={{ color: '#6b7280', fontSize: '12px', px: 1, mb: 1, display: 'block' }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '12px', px: 1, mb: 1, display: 'block' }}>
             Recent
           </Typography>
           <List dense disablePadding>
@@ -420,13 +402,13 @@ export default function ChatUI() {
                   py: 1.5,
                   px: 2,
                   '&.Mui-selected': { 
-                    bgcolor: '#e5e7eb',
+                    bgcolor: 'grey.200',
                     '&:hover': {
-                      bgcolor: '#d1d5db'
+                      bgcolor: 'grey.300'
                     }
                   },
                   '&:hover': {
-                    bgcolor: '#f3f4f6'
+                    bgcolor: 'grey.100'
                   }
                 }}
               >
@@ -434,7 +416,7 @@ export default function ChatUI() {
                   <ChatBubbleOutlineIcon 
                     fontSize="small" 
                     sx={{ 
-                      color: conv.id === currentId ? '#374151' : '#6b7280',
+                      color: conv.id === currentId ? 'text.primary' : 'text.secondary',
                       flexShrink: 0
                     }} 
                   />
@@ -443,7 +425,7 @@ export default function ChatUI() {
                       variant="body2" 
                       sx={{ 
                         fontWeight: 500,
-                        color: '#374151',
+                        color: 'text.primary',
                         fontSize: '14px',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -459,18 +441,13 @@ export default function ChatUI() {
                       e.stopPropagation(); 
                       deleteConversation(conv.id); 
                     }} 
-                    sx={{ 
-                      color: '#9ca3af',
+                    sx={(theme) => ({ 
+                      color: theme.palette.grey[400],
                       p: 0.5,
                       opacity: 0,
-                      '.MuiListItemButton-root:hover &': {
-                        opacity: 1
-                      },
-                      '&:hover': { 
-                        color: '#ef4444',
-                        bgcolor: '#fef2f2'
-                      }
-                    }}
+                      '.MuiListItemButton-root:hover &': { opacity: 1 },
+                      '&:hover': { color: theme.palette.error.main, bgcolor: alpha(theme.palette.error.main, 0.08) }
+                    })}
                   >
                     <DeleteOutlineIcon fontSize="small" />
                   </IconButton>
@@ -484,31 +461,32 @@ export default function ChatUI() {
         {/* User Profile Section */}
         <Box sx={{ 
           p: 2.8, 
-          borderTop: '1px solid #e5e7eb',
+          borderTop: 1,
+          borderColor: 'divider',
           display: 'flex',
           alignItems: 'center',
           gap: 2,
           cursor: 'default',
           '&:hover': {
-            bgcolor: '#f9fafb'
+            bgcolor: 'grey.50'
           }
         }}>
           <Box sx={{
             width: 32,
             height: 32,
             borderRadius: '50%',
-            bgcolor: '#CC0000',
+            bgcolor: 'var(--brand-red)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            <PersonIcon sx={{ color: '#ffffff', fontSize: 18 }} />
+            <PersonIcon sx={{ color: 'var(--brand-white)', fontSize: 18 }} />
           </Box>
           <Box sx={{ flex: 1 }}>
-            <Typography variant="body2" sx={{ color: '#374151', fontSize: '14px', fontWeight: 500 }}>
+            <Typography variant="body2" sx={{ color: 'text.primary', fontSize: '14px', fontWeight: 500 }}>
               Miles Hollifield
             </Typography>
-            <Typography variant="caption" sx={{ color: '#9ca3af', fontSize: '12px' }}>
+            <Typography variant="caption" sx={{ color: 'grey.400', fontSize: '12px' }}>
               mfhollif@ncsu.edu
             </Typography>
           </Box>
@@ -521,7 +499,7 @@ export default function ChatUI() {
         flex: 1, 
         display: 'flex', 
         flexDirection: 'column', 
-        bgcolor: '#ffffff'
+        bgcolor: 'background.default'
       }}>
         {activeView === 'chat' ? (
           <>
@@ -529,11 +507,12 @@ export default function ChatUI() {
             <Box sx={{ 
               px: 2,
               py: 1, 
-              borderBottom: '1px solid #e5e7eb',
+              borderBottom: 1,
+              borderColor: 'divider',
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center',
-              bgcolor: '#CC0000',
+              bgcolor: 'var(--brand-red)',
               height: 56
             }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, height: '100%' }}>
@@ -542,12 +521,7 @@ export default function ChatUI() {
                     <IconButton 
                       size="small"
                       onClick={() => setSidebarOpen(true)}
-                      sx={{ 
-                        color: '#ffffff',
-                        '&:hover': { 
-                          color: '#ffffff'
-                        }
-                      }}
+                      sx={{ color: 'var(--brand-white)', '&:hover': { color: 'var(--brand-white)' } }}
                     >
                       <MenuIcon />
                     </IconButton>
@@ -557,14 +531,14 @@ export default function ChatUI() {
                   variant="h6" 
                   sx={{ 
                     fontWeight: 600,
-                    color: '#ffffff',
+                    color: 'var(--brand-white)',
                     fontSize: '18px'
                   }}
                 >
                   GoodnightGPT
                 </Typography>
               </Box>
-              {loading && <CircularProgress size={20} sx={{ color: '#6b7280' }} />}
+              {loading && <CircularProgress size={20} sx={{ color: 'text.secondary' }} />}
             </Box>
 
             {/* Messages Area */}
@@ -573,7 +547,7 @@ export default function ChatUI() {
               overflowY: 'auto', 
               px: 4, 
               py: 4,
-              bgcolor: '#ffffff'
+              bgcolor: 'background.default'
             }}>
               <Stack spacing={4} maxWidth={768} mx="auto">
                 {conversations.length === 0 ? (
@@ -586,20 +560,20 @@ export default function ChatUI() {
                     textAlign: 'center',
                     py: 8
                   }}>
-                    <Typography 
+          <Typography 
                       variant="h4" 
                       sx={{ 
                         fontWeight: 600,
-                        color: '#111827',
+            color: 'text.primary',
                         mb: 2
                       }}
                     >
                       Welcome to GoodnightGPT
                     </Typography>
-                    <Typography 
+          <Typography 
                       variant="body1" 
                       sx={{ 
-                        color: '#6b7280',
+            color: 'text.secondary',
                         mb: 4,
                         maxWidth: 400
                       }}
@@ -616,10 +590,10 @@ export default function ChatUI() {
                       alignItems="flex-start" 
                       flexDirection={msg.sender === 'user' ? 'row-reverse' : 'row'}
                     >
-                      <Avatar 
+            <Avatar 
                         sx={{ 
-                          bgcolor: msg.sender === 'user' ? '#CC0000' : '#f3f4f6',
-                          color: msg.sender === 'user' ? '#ffffff' : '#374151',
+              bgcolor: 'grey.100',
+              color: 'text.primary',
                           width: 36, 
                           height: 36, 
                           fontSize: 14,
@@ -637,8 +611,9 @@ export default function ChatUI() {
                           variant="outlined" 
                           sx={{ 
                             p: 3, 
-                            bgcolor: msg.sender === 'user' ? '#CC0000' : '#ffffff',
-                            border: msg.sender === 'user' ? '1px solid #CC0000' : '1px solid #e5e7eb',
+                            bgcolor: 'background.default',
+                            border: 1,
+                            borderColor: 'divider',
                             borderRadius: 2,
                             boxShadow: 'none'
                           }}
@@ -647,7 +622,7 @@ export default function ChatUI() {
                             variant="body1" 
                             sx={{ 
                               whiteSpace: 'pre-line',
-                              color: msg.sender === 'user' ? '#ffffff' : '#374151',
+                              color: 'text.primary',
                               fontSize: '15px',
                               lineHeight: 1.6
                             }}
@@ -659,7 +634,7 @@ export default function ChatUI() {
                               <Typography 
                                 variant="caption" 
                                 sx={{ 
-                                  color: '#6b7280',
+                                  color: 'text.secondary',
                                   fontSize: '12px',
                                   fontWeight: 500,
                                   mb: 1,
@@ -680,19 +655,19 @@ export default function ChatUI() {
                                       variant="outlined" 
                                       sx={{ 
                                         p: 1.5, 
-                                        bgcolor: '#f9fafb',
-                                        borderColor: '#e5e7eb',
+                                        bgcolor: 'grey.50',
+                                        borderColor: 'divider',
                                         borderRadius: 1,
                                         cursor: 'pointer',
                                         '&:hover': {
-                                          bgcolor: '#f3f4f6'
+                                          bgcolor: 'grey.100'
                                         }
                                       }}
                                     >
                                       <Typography 
                                         variant="caption" 
                                         sx={{ 
-                                          color: '#6b7280',
+                                          color: 'text.secondary',
                                           fontSize: '12px',
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
@@ -716,10 +691,10 @@ export default function ChatUI() {
                 )}
                 {loading && (
                   <Box display="flex" gap={3} alignItems="center">
-                    <Avatar 
+          <Avatar 
                       sx={{ 
-                        bgcolor: '#f3f4f6',
-                        color: '#374151',
+            bgcolor: 'grey.100',
+            color: 'text.primary',
                         width: 36, 
                         height: 36, 
                         fontSize: 14,
@@ -728,7 +703,7 @@ export default function ChatUI() {
                     >
                       AI
                     </Avatar>
-                    <CircularProgress size={24} sx={{ color: '#6b7280' }} />
+          <CircularProgress size={24} sx={{ color: 'text.secondary' }} />
                   </Box>
                 )}
                 <div ref={chatEndRef} />
@@ -738,8 +713,9 @@ export default function ChatUI() {
             {/* Input Area */}
             <Box sx={{ 
               p: 2, 
-              borderTop: '1px solid #e5e7eb',
-              bgcolor: '#ffffff'
+              borderTop: 1,
+              borderColor: 'divider',
+              bgcolor: 'background.default'
             }}>
               <Box maxWidth={768} mx="auto">
                 <Paper 
@@ -750,12 +726,13 @@ export default function ChatUI() {
                     alignItems: 'flex-end', 
                     gap: 2, 
                     p: 1.5,
-                    border: '1px solid #d1d5db',
+                    border: 1,
+                    borderColor: 'divider',
                     borderRadius: 2,
-                    bgcolor: '#ffffff',
+                    bgcolor: 'background.default',
                     boxShadow: 'none',
                     '&:focus-within': {
-                      borderColor: '#6b7280'
+                      borderColor: 'text.secondary'
                     }
                   }}
                 >
@@ -763,9 +740,9 @@ export default function ChatUI() {
                     sx={{ 
                       flex: 1, 
                       fontSize: '15px',
-                      color: '#374151',
+                      color: 'text.primary',
                       '& input::placeholder': {
-                        color: '#9ca3af'
+                        color: 'grey.400'
                       }
                     }}
                     placeholder="Type your message..."
@@ -779,16 +756,16 @@ export default function ChatUI() {
                     onClick={handleSend} 
                     disabled={!input.trim() || loading}
                     sx={{ 
-                      bgcolor: input.trim() ? '#000000' : '#e5e7eb',
-                      color: input.trim() ? '#ffffff' : '#9ca3af',
+                      bgcolor: input.trim() ? 'common.black' : 'grey.200',
+                      color: input.trim() ? 'common.white' : 'grey.400',
                       width: 32,
                       height: 32,
                       '&:hover': {
-                        bgcolor: input.trim() ? '#374151' : '#d1d5db'
+                        bgcolor: input.trim() ? 'grey.700' : 'grey.300'
                       },
                       '&:disabled': {
-                        bgcolor: '#e5e7eb',
-                        color: '#9ca3af'
+                        bgcolor: 'grey.200',
+                        color: 'grey.400'
                       }
                     }}
                   >
@@ -804,11 +781,12 @@ export default function ChatUI() {
             <Box sx={{ 
               px: 2,
               py: 1, 
-              borderBottom: '1px solid #e5e7eb',
+              borderBottom: 1,
+              borderColor: 'divider',
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center',
-              bgcolor: '#ffffff',
+              bgcolor: 'var(--brand-red)',
               height: 56
             }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, height: '100%' }}>
@@ -817,13 +795,7 @@ export default function ChatUI() {
                     <IconButton 
                       size="small"
                       onClick={() => setSidebarOpen(true)}
-                      sx={{ 
-                        color: '#6b7280',
-                        '&:hover': { 
-                          color: '#374151',
-                          bgcolor: '#f3f4f6'
-                        }
-                      }}
+                      sx={{ color: 'var(--brand-white)', '&:hover': { color: 'var(--brand-white)' } }}
                     >
                       <MenuIcon />
                     </IconButton>
@@ -833,7 +805,7 @@ export default function ChatUI() {
                   variant="h6" 
                   sx={{ 
                     fontWeight: 600,
-                    color: '#111827',
+                    color: 'var(--brand-white)',
                     fontSize: '18px'
                   }}
                 >
@@ -846,7 +818,7 @@ export default function ChatUI() {
             <Box sx={{ 
               flex: 1, 
               p: 4,
-              bgcolor: '#ffffff',
+              bgcolor: 'background.default',
               overflowY: 'auto'
             }}>
               <Box maxWidth={768} mx="auto">

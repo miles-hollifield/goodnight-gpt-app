@@ -1,21 +1,25 @@
 @import "tailwindcss";
 
 :root {
+  /* NC State brand */
+  --brand-red: #CC0000; /* Wolfpack Red */
+  --brand-black: #000000; /* Wolfpack Black */
+  --brand-white: #FFFFFF; /* Wolfpack White */
   /* Modern light theme */
   --background: #ffffff;
   --foreground: #111827;
   --sidebar-bg: #ffffff;
   --sidebar-hover: #f9fafb;
   --border-color: #e5e7eb;
-  --message-user-bg: #CC0000;
+  --message-user-bg: var(--brand-red);
   --message-ai-bg: #ffffff;
   --input-bg: #ffffff;
   --hover-bg: #f9fafb;
   --text-primary: #111827;
   --text-secondary: #6b7280;
-  --accent: #CC0000;
-  --header-bg: #ffffff;
-  --header-text: #111827;
+  --accent: var(--brand-red);
+  --header-bg: #ffffff; /* per page can override to var(--brand-red) */
+  --header-text: #111827; /* or var(--brand-white) when header is red */
   --shadow-light: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --shadow-medium: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
@@ -27,14 +31,14 @@
     --foreground: #f9fafb;
     --sidebar-bg: #1f2937;
     --sidebar-hover: #374151;
-    --border-color: #374151;
-  --message-user-bg: #CC0000;
+  --border-color: #374151;
+  --message-user-bg: var(--brand-red);
     --message-ai-bg: #1f2937;
     --input-bg: #1f2937;
     --hover-bg: #374151;
     --text-primary: #f9fafb;
     --text-secondary: #9ca3af;
-    --accent: #3b82f6;
+  --accent: var(--brand-red);
     --header-bg: #1f2937;
     --header-text: #f9fafb;
     --shadow-light: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);

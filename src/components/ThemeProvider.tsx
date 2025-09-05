@@ -3,35 +3,38 @@
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 import { ReactNode } from 'react';
+import { BRAND, NEUTRAL } from '@/theme/colors';
 
 const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#CC0000',
+      main: BRAND.red,
       light: '#FF3333',
       dark: '#990000',
+      contrastText: BRAND.white,
     },
     secondary: {
-      main: '#666666',
-      light: '#999999',
-      dark: '#333333',
+      main: NEUTRAL[700],
+      light: NEUTRAL[500],
+      dark: NEUTRAL[900],
+      contrastText: BRAND.white,
     },
     background: {
-      default: '#ffffff',
-      paper: '#f8f8f8',
+      default: BRAND.white,
+      paper: NEUTRAL[50],
     },
     text: {
-      primary: '#000000',
-      secondary: '#666666',
+      primary: BRAND.black,
+      secondary: NEUTRAL[500],
     },
     grey: {
-      50: '#f8f8f8',
+      50: NEUTRAL[50],
       100: '#f0f0f0',
-      200: '#e0e0e0',
-      500: '#666666',
+      200: NEUTRAL[200],
+      500: NEUTRAL[500],
     },
-    divider: '#e0e0e0',
+    divider: NEUTRAL[200],
   },
   typography: {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
@@ -49,12 +52,27 @@ const theme = createTheme({
     borderRadius: 12,
   },
   components: {
+    MuiButton: {
+      defaultProps: {
+        disableElevation: true,
+      },
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          borderRadius: 8,
+        },
+        outlined: {
+          borderColor: NEUTRAL[300],
+          '&:hover': { borderColor: NEUTRAL[400], backgroundColor: NEUTRAL[50] },
+        },
+      },
+    },
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: '#CC0000',
-          color: '#ffffff',
-          boxShadow: '0 1px 0 0 #e0e0e0',
+          backgroundColor: BRAND.red,
+          color: BRAND.white,
+          boxShadow: `0 1px 0 0 ${NEUTRAL[200]}`,
         },
       },
     },
@@ -70,12 +88,20 @@ const theme = createTheme({
         root: {
           '& .MuiOutlinedInput-root': {
             '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: '#CC0000',
+              borderColor: BRAND.red,
             },
             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: '#CC0000',
+              borderColor: BRAND.red,
             },
           },
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          color: NEUTRAL[500],
+          '&:hover': { backgroundColor: NEUTRAL[100] },
         },
       },
     },

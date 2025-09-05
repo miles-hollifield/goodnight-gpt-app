@@ -108,14 +108,7 @@ export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) 
     }
   };
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(date);
-  };
+  // Note: date formatting helper removed (unused)
 
   const getFileTypeIcon = (fileType: string) => {
     switch (fileType.toLowerCase()) {
@@ -322,7 +315,7 @@ export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) 
         }
 
         .chunk-count {
-          color: #CC0000;
+          color: var(--brand-red);
         }
 
         .upload-date {
