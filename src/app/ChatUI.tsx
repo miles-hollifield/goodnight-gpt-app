@@ -387,10 +387,15 @@ export default function ChatUI() {
     });
     try {
       const base = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+      // Build minimal history to carry context (user/assistant roles only)
+      const history = currentConversation?.messages.map(m => ({
+        role: m.sender === 'ai' ? 'assistant' : 'user',
+        content: m.text
+      })) ?? [];
       const res = await fetch(`${base}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMsg.text })
+        body: JSON.stringify({ message: userMsg.text, history })
       });
       if (!res.ok) throw new Error(`Backend error ${res.status}`);
       const data = await res.json();

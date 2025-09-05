@@ -45,7 +45,9 @@ async function withRetry<T>(
   throw new Error('Retry logic failed unexpectedly');
 }
 
-export async function sendMessage(message: string): Promise<Message> {
+export type ChatHistoryItem = { role: 'user' | 'assistant' | 'system'; content: string };
+
+export async function sendMessage(message: string, history?: ChatHistoryItem[]): Promise<Message> {
   return withRetry(async () => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), DEFAULT_RETRY_OPTIONS.timeout);
@@ -54,7 +56,7 @@ export async function sendMessage(message: string): Promise<Message> {
       const res = await fetch(`${API_BASE}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
+  body: JSON.stringify(history && history.length > 0 ? { message, history } : { message }),
         signal: controller.signal,
       });
       
