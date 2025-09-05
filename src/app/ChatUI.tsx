@@ -79,6 +79,169 @@ function generateChatTitle(userMessage: string): string {
   return title.charAt(0).toUpperCase() + title.slice(1);
 }
 
+// Create a short title from the first user + ai exchange
+function summarizeInitialConversation(messages: Message[]): string {
+  // Expect messages to include initial greeting (ai), then user, then ai
+  const firstUser = messages.find(m => m.sender === 'user');
+  const firstAiAfterUserIndex = firstUser
+    ? messages.findIndex((m, idx) => idx > messages.indexOf(firstUser) && m.sender === 'ai')
+    : -1;
+  const firstAiAfterUser = firstAiAfterUserIndex >= 0 ? messages[firstAiAfterUserIndex] : null;
+
+  // Helper config
+  const STOPWORDS = new Set([
+    'the','a','an','and','or','but','if','then','than','that','this','those','these','to','of','in','on','for','with','about','as','at','by','from','into','over','after','before','under','above','between','how','what','why','where','when','who','whom','which','can','could','would','should','do','does','did','is','are','was','were','be','being','been','have','has','had','i','you','we','they','it','my','your','our','their','me','us','them','please','help','kind','like','just','really','actually','basically','kinda','sorta'
+  ]);
+  const ACRONYM_MAP: Record<string, string> = {
+    'api':'API','ui':'UI','ux':'UX','ai':'AI','ml':'ML','nlp':'NLP','sql':'SQL','csv':'CSV','pdf':'PDF','http':'HTTP','css':'CSS','html':'HTML','gpt':'GPT','gpa':'GPA','ira':'IRA','sat':'SAT','act':'ACT','c++':'C++','c#':'C#',
+    'react':'React','next.js':'Next.js','nextjs':'Next.js','node.js':'Node.js','nodejs':'Node.js','typescript':'TypeScript','javascript':'JavaScript'
+  };
+  const normalizeToken = (w: string) => w
+    .toLowerCase()
+    .replace(/^can\s+you\s+|^could\s+you\s+|^would\s+you\s+|^can\s+u\s+|^could\s+u\s+|^pls\s+|^please\s+|^i\s+need\s+|^i\s+want\s+|^i\s*'m\s+trying\s+to\s+|^how\s+do\s+i\s+|^how\s+to\s+|^what\s+is\s+|^what\s+are\s+|^why\s+is\s+/i, '')
+    .replace(/^[^a-z0-9]+|[^a-z0-9)(+.#-]+$/gi, ''); // keep (), +, ., #, - in tokens
+  const tokenize = (text: string) => text
+    .replace(/[!?]+/g, ' ')
+    .split(/\s+/)
+    .map(t => normalizeToken(t))
+    .filter(Boolean);
+  const isAcronymLike = (t: string) => /\d|\([a-z0-9]+\)/i.test(t) || Object.prototype.hasOwnProperty.call(ACRONYM_MAP, t);
+  const titleCaseWord = (t: string) => {
+    const lower = t.toLowerCase();
+    if (ACRONYM_MAP[lower]) return ACRONYM_MAP[lower];
+    // Handle hyphenated tokens like server-side
+    return lower.split('-').map(part => part ? part.charAt(0).toUpperCase() + part.slice(1) : part).join('-');
+  };
+  // Verb normalization to canonical verb
+  const VERB_CANON: Record<string, string> = {
+    'debug':'debug','troubleshoot':'debug','diagnose':'debug',
+    'plan':'plan','planning':'plan','schedule':'plan',
+    'design':'design','build':'build','create':'create','make':'create','implement':'implement','write':'write','code':'write',
+    'fix':'fix','repair':'fix','resolve':'fix',
+    'deploy':'deploy','ship':'deploy','release':'deploy',
+    'optimize':'optimize','improve':'improve','tune':'optimize',
+    'explain':'explain','teach':'explain','tell':'explain','clarify':'explain',
+    'compare':'compare','contrast':'compare','summarize':'summarize','overview':'summarize',
+    'setup':'setup','set-up':'setup','set':'setup','configure':'configure','install':'install','update':'update','upgrade':'upgrade','migrate':'migrate',
+    'save':'save','invest':'invest','budget':'budget','plan-budget':'budget'
+  };
+  // Map canonical verbs to noun forms suitable for titles
+  const VERB_TO_NOUN: Record<string, string> = {
+    'debug':'Debugging',
+    'plan':'Planning',
+    'design':'Design',
+    'build':'Build',
+    'create':'Creation',
+    'implement':'Implementation',
+    'write':'Writing',
+    'fix':'Fixing',
+    'deploy':'Deployment',
+    'optimize':'Optimization',
+    'improve':'Improvement',
+    'compare':'Comparison',
+    'summarize':'Summary',
+    'setup':'Setup',
+    'configure':'Configuration',
+    'install':'Installation',
+    'update':'Update',
+    'upgrade':'Upgrade',
+    'migrate':'Migration',
+    'invest':'Investment',
+    'budget':'Budgeting'
+  };
+  const NON_SUBSTANTIVE_VERBS = new Set(['explain']); // usually omit tail like "Explanation"
+
+  const extractTokensWithVerbs = (text: string) => {
+    const raw = tokenize(text);
+    const tokens: string[] = [];
+    const verbs: string[] = [];
+    // detect "set up" phrase
+    const joined = ` ${text.toLowerCase()} `;
+    if (/(^|\W)set\s+up(\W|$)/.test(joined) && !raw.includes('setup')) raw.push('setup');
+    for (const tok of raw) {
+      const base = tok.toLowerCase();
+      if (!base) continue;
+      if (STOPWORDS.has(base)) continue;
+      if (!isAcronymLike(base) && /^\d+$/.test(base)) continue; // drop bare numbers
+      const canonVerb = VERB_CANON[base];
+      if (canonVerb) {
+        if (!verbs.includes(canonVerb)) verbs.push(canonVerb);
+        // Some verbs also imply a subject token (e.g., save -> savings)
+        if (canonVerb === 'save' && !tokens.includes('savings')) tokens.push('savings');
+        continue; // don't add verb token to subjects
+      }
+      if (!tokens.includes(base)) tokens.push(base);
+    }
+    return { tokens, verbs };
+  };
+
+  const MAX_WORDS = 6;
+  const MAX_CHARS = 60;
+
+  const buildTitle = (primary: string, secondary?: string) => {
+    const primaryInfo = extractTokensWithVerbs(primary);
+  const subjects = [...primaryInfo.tokens];
+  const verbs = [...primaryInfo.verbs];
+    // Enrich from secondary if needed
+    if (secondary && subjects.length < 3) {
+      const secondaryInfo = extractTokensWithVerbs(secondary);
+      for (const t of secondaryInfo.tokens) if (!subjects.includes(t)) subjects.push(t);
+      for (const v of secondaryInfo.verbs) if (!verbs.includes(v)) verbs.push(v);
+    }
+    if (subjects.length === 0 && verbs.length === 0) return '';
+
+    // Choose an action tail noun if helpful
+    let tail: string | null = null;
+    for (const v of verbs) {
+      if (NON_SUBSTANTIVE_VERBS.has(v)) continue; // skip explanation-like tails
+      // Special case: save -> append "Strategy" in addition to "Savings" subject
+      if (v === 'save') {
+        tail = 'Strategy';
+        break;
+      }
+      const noun = VERB_TO_NOUN[v];
+      if (noun) { tail = noun; break; }
+    }
+
+    // Build title from subjects + optional tail
+    const words: string[] = [];
+    for (const s of subjects) {
+      if (words.length >= (tail ? MAX_WORDS - 1 : MAX_WORDS)) break;
+      words.push(s);
+    }
+    if (tail) words.push(...tail.split(' '));
+    const limited = words.slice(0, MAX_WORDS);
+    let title = limited.map(titleCaseWord).join(' ');
+    if (title.length > MAX_CHARS) title = title.slice(0, MAX_CHARS).replace(/[\s,.;:]+$/g, '').trim();
+    if (!title || title.toLowerCase() === 'new chat') return '';
+    return title;
+  };
+
+  if (firstUser && firstAiAfterUser) {
+    const t = buildTitle(firstUser.text, firstAiAfterUser.text) || generateChatTitle(firstUser.text);
+    if (t && t !== 'New Chat') return t;
+  }
+
+  // If only user exists, try cleaned question
+  if (firstUser && firstUser.text.trim()) {
+    const candidate = buildTitle(firstUser.text) || generateChatTitle(firstUser.text);
+    if (candidate && candidate !== 'New Chat' && candidate.length >= 3) return candidate;
+  }
+
+  // If only AI exists, try first sentence
+  if (firstAiAfterUser && firstAiAfterUser.text.trim()) {
+    const cleaned = firstAiAfterUser.text
+      .replace(/^sure[:,]?\s*/i, '')
+      .replace(/^here(?:'s| is)\s*(?:an?|the)\s*/i, '')
+      .trim();
+    const firstSentence = cleaned.split(/[.!?]/)[0].trim();
+    const title = firstSentence.length > 50 ? firstSentence.slice(0, 47).trim() + '...' : (firstSentence || 'New Chat');
+    return title.charAt(0).toUpperCase() + title.slice(1);
+  }
+
+  return 'New Chat';
+}
+
 export default function ChatUI() {
   const [conversations, setConversations] = useState<Conversation[]>(() => {
     try {
@@ -212,18 +375,11 @@ export default function ChatUI() {
     console.log("Sending user message:", userMsg);
     setInput("");
     setLoading(true);
-    // Add user message immediately
+    // Add user message immediately (do not set title yet)
     updateConversation(targetConversationId, c => {
-      // Generate a more meaningful title from the user's message
-      let newTitle = c.title;
-      if (c.title === "New Chat") {
-        newTitle = generateChatTitle(userMsg.text);
-      }
-      
       const updated = {
         ...c,
         messages: [...c.messages, userMsg],
-        title: newTitle,
         updatedAt: Date.now()
       };
       console.log("Updated conversation with user message:", updated);
@@ -246,9 +402,12 @@ export default function ChatUI() {
       };
       console.log("Adding AI message:", aiMsg);
       updateConversation(targetConversationId, c => {
+        const updatedMessages = [...c.messages, aiMsg];
+        const newTitle = c.title === 'New Chat' ? summarizeInitialConversation(updatedMessages) : c.title;
         const updated = {
           ...c,
-          messages: [...c.messages, aiMsg],
+          messages: updatedMessages,
+          title: newTitle,
           updatedAt: Date.now()
         };
         console.log("Updated conversation with AI message:", updated);
