@@ -358,6 +358,26 @@ export default function ChatUI() {
     }));
   };
 
+  // Helper: collapse raw retrieved contexts into unique document sources
+  const toDocumentSources = useCallback((ctx: RetrievedContext[] | undefined) => {
+    if (!ctx || ctx.length === 0) return [] as Array<{ docId: string; source: string; type: string; score: number; text?: string }>;
+    const byDoc: Record<string, { docId: string; source: string; type: string; score: number; text?: string }> = {};
+    for (const c of ctx) {
+      const id = String(c.id || "");
+      const docId = id.includes("-") ? id.slice(0, id.lastIndexOf("-")) : id;
+      const meta = (c.metadata || {}) as Record<string, unknown>;
+      const source = String(meta["source"] ?? docId ?? "Unknown");
+      const type = String(meta["type"] ?? "unknown").toLowerCase();
+      const score = typeof c.score === 'number' ? c.score : 0;
+      // Keep the best (highest score) entry per doc
+      const existing = byDoc[docId];
+      if (!existing || score > existing.score) {
+        byDoc[docId] = { docId, source, type, score, text: typeof c.text === 'string' ? c.text : undefined };
+      }
+    }
+    return Object.values(byDoc).sort((a, b) => b.score - a.score);
+  }, []);
+
   const handleSend = async () => {
     if (!input.trim() || loading) return;
     
@@ -807,13 +827,13 @@ export default function ChatUI() {
                                   display: 'block'
                                 }}
                               >
-                                Sources:
+                                Source:
                               </Typography>
                               <Stack spacing={1}>
-                                {msg.context.slice(0,3).map((c, contextIndex) => (
+                                {toDocumentSources(msg.context).slice(0,1).map((s, i) => (
                                   <Tooltip 
-                                    key={`${currentId}-${msg.id}-context-${contextIndex}-${c.id}`} 
-                                    title={`Score: ${c.score.toFixed(3)}\n${c.text}`} 
+                                    key={`${currentId}-${msg.id}-source-${i}-${s.docId}`} 
+                                    title={`Score: ${s.score.toFixed(3)}${s.text ? `\n${s.text}` : ''}`} 
                                     placement="top" 
                                     arrow
                                   >
@@ -824,25 +844,31 @@ export default function ChatUI() {
                                         bgcolor: 'grey.50',
                                         borderColor: 'divider',
                                         borderRadius: 1,
-                                        cursor: 'pointer',
-                                        '&:hover': {
-                                          bgcolor: 'grey.100'
-                                        }
+                                        cursor: 'default',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1,
+                                        '&:hover': { bgcolor: 'grey.100' }
                                       }}
                                     >
                                       <Typography 
                                         variant="caption" 
                                         sx={{ 
-                                          color: 'text.secondary',
+                                          color: 'text.primary',
                                           fontSize: '12px',
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
                                           whiteSpace: 'nowrap',
-                                          display: 'block'
+                                          flex: 1
                                         }}
                                       >
-                                        {c.text}
+                                        {s.source}
                                       </Typography>
+                                      <Box sx={{ px: 0.75, py: 0.25, bgcolor: 'grey.200', borderRadius: 1 }}>
+                                        <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
+                                          {(s.type || 'unknown').toUpperCase()}
+                                        </Typography>
+                                      </Box>
                                     </Paper>
                                   </Tooltip>
                                 ))}

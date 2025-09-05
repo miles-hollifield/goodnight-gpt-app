@@ -73,7 +73,7 @@ export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) 
 
   const handleUploadSuccess = (response: UploadResponse) => {
     // Extract filename from message if possible
-    const filename = response.message.match(/Successfully processed (.+?)(?:\s|$)/)?.[1] || 'Unknown file';
+  const filename = response.original_filename || response.message.match(/Successfully processed (.+?)(?:\s|$)/)?.[1] || 'Unknown file';
     
     const newDoc: UploadedDocument = {
       id: crypto.randomUUID(),
@@ -164,7 +164,12 @@ export function SourcesTab({ onUploadSuccess, onUploadError }: SourcesTabProps) 
             {pineconeDocuments.map((doc) => {
               const local = uploadedDocs.find(u => u.documentId === doc.document_id);
               const preferredType = (local?.fileType || doc.type || '').toLowerCase();
-              const displayName = local?.filename || doc.source;
+              const hasExt = (name?: string) => !!name && name.includes('.') && !name.endsWith('.');
+              const displayName = hasExt(local?.filename)
+                ? (local!.filename)
+                : hasExt(doc.source)
+                  ? doc.source
+                  : (local?.filename || doc.source || (preferredType ? `file.${preferredType}` : 'Unknown file'));
               const displayTypeLabel = (preferredType || 'unknown').toUpperCase();
               const columnsCount = local?.columns?.length ?? undefined;
               const pages = doc.pages ?? local?.pages;

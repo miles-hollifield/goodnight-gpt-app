@@ -121,6 +121,7 @@ export interface UploadResponse {
   columns?: string[];
   pages?: number;
   document_id: string;
+  original_filename?: string;
 }
 
 export async function uploadDocument(file: File, documentId?: string): Promise<UploadResponse> {
