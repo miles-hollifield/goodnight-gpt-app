@@ -529,8 +529,19 @@ export default function ChatUI() {
             onClick={createNewChat} 
             startIcon={<AddIcon />} 
             fullWidth 
-            variant="outlined" 
-            sx={{ color: 'text.primary', borderColor: 'divider', textTransform: 'none', fontWeight: 500, py: 1.5, borderRadius: 2, '&:hover': { borderColor: 'grey.400', bgcolor: 'grey.50' } }}
+            variant="contained"
+            sx={{ 
+              backgroundColor: '#CC0000',
+              color: '#FFFFFF',
+              textTransform: 'none',
+              fontWeight: 600,
+              py: 1.5,
+              borderRadius: 2,
+              boxShadow: '0 1px 2px rgba(0,0,0,0.08)',
+              '&:hover': { backgroundColor: '#B30000', boxShadow: '0 2px 6px rgba(0,0,0,0.12)' },
+              '&:active': { backgroundColor: '#990000' },
+              '& .MuiButton-startIcon': { color: '#FFFFFF' }
+            }}
           >
             New Chat
           </Button>

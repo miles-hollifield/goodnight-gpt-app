@@ -6,10 +6,38 @@ interface NewChatButtonProps {
 }
 
 export function NewChatButton({ onClick, collapsed = false }: NewChatButtonProps) {
+  const base = '#CC0000';
+  const hover = '#B30000';
+  const active = '#990000';
+  const text = '#FFFFFF';
+  const currentBg = base;
+  let isMouseDown = false;
+
+  const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!isMouseDown) e.currentTarget.style.backgroundColor = hover;
+  };
+  const handleMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+    isMouseDown = false;
+    e.currentTarget.style.backgroundColor = base;
+  };
+  const handleMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
+    isMouseDown = true;
+    e.currentTarget.style.backgroundColor = active;
+  };
+  const handleMouseUp = (e: React.MouseEvent<HTMLButtonElement>) => {
+    isMouseDown = false;
+    e.currentTarget.style.backgroundColor = hover;
+  };
+
   return (
     <button
       onClick={onClick}
-  className="flex items-center gap-3 w-full px-3 py-3 text-sm rounded-lg transition-colors select-none btn-primary"
+      className="flex items-center gap-3 w-full px-3 py-3 text-sm rounded-lg transition-colors select-none cursor-pointer"
+      style={{ backgroundColor: currentBg, color: text, border: `1px solid ${active}` }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
       aria-label="New chat"
       title={collapsed ? 'New chat' : undefined}
     >
