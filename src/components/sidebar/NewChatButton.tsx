@@ -9,7 +9,7 @@ export function NewChatButton({ onClick, collapsed = false }: NewChatButtonProps
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-3 w-full px-3 py-3 text-sm rounded-lg border border-[var(--border-color)] hover:bg-[var(--hover-bg)] transition-colors"
+  className="flex items-center gap-3 w-full px-3 py-3 text-sm rounded-lg transition-colors select-none btn-primary"
       aria-label="New chat"
       title={collapsed ? 'New chat' : undefined}
     >

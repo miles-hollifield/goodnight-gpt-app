@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProviderWrapper } from "@/components/ThemeProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ThemeRegistry } from "@/components/ThemeRegistry";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,11 +31,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        <ThemeProviderWrapper>
-          <ErrorBoundary>
-            {children}
-          </ErrorBoundary>
-        </ThemeProviderWrapper>
+        <ThemeRegistry>
+          <ThemeProviderWrapper>
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
+          </ThemeProviderWrapper>
+        </ThemeRegistry>
       </body>
     </html>
   );
